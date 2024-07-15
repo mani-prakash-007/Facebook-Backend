@@ -17,9 +17,7 @@ const Authorization = async (req, res, next) => {
     req.user = await User.findById(decode.id).select("-password");
     next();
   } catch (err) {
-    return res
-      .status(400)
-      .json({ Error: err, message: " Token not Authorized . Check Token" });
+    return res.status(400).json({ Error: `Token not Authorized . ${err}` });
   }
 };
 
