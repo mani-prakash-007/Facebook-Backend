@@ -119,7 +119,7 @@ const deleteComment = async (req, res) => {
   }
 };
 
-//Toggling Like to Comment
+//Toggling Like to Comment...
 const addLike = async (req, res) => {
   try {
     const comment = await Comment.findById(req.params.id);
@@ -144,7 +144,7 @@ const addLike = async (req, res) => {
   }
 };
 
-//Toggling Dislike to Comment
+//Toggling Dislike to Comment...
 const addDislike = async (req, res) => {
   try {
     const comment = await Comment.findById(req.params.id);
