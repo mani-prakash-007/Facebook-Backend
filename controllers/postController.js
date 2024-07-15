@@ -99,9 +99,15 @@ const addLike = async (req, res) => {
 const addDislike = async (req, res) => {
   const post = await Post.findById(req.params.id);
   const curr_user_id = req.user.id;
-  if (!post.dislikes.includes(req.user.id)) {
+  if (!post.dislikes.includes(curr_user_id)) {
+    if (post.likes.includes(curr_user_id)) {
+      post.likes.pop();
+      await post.save();
+      //   console.log("Like Removed");
+    }
     post.dislikes.push(curr_user_id);
     await post.save();
+    // console.log("Dislike Added");
     res.status(200).json({ Message: "Dislike Added..." });
   } else if (post.dislikes.includes(req.user.id)) {
     post.dislikes.pop(curr_user_id);
