@@ -20,12 +20,12 @@ conn.once("open", () => {
 //Sub route Imports:
 const userRoutes = require("./routes/userRoutes");
 const postRoutes = require("./routes/postRoutes");
-const commentRoutes = require("./routes/commentRoutes")
+const commentRoutes = require("./routes/commentRoutes");
 app.use("/api/user", userRoutes);
 app.use("/api/post", postRoutes);
 app.use("/api/post/comment", commentRoutes);
 
-//main Route
+//Main Route
 app.get("/", (req, res) => {
   res.status(200).json({ Message: "Main Route" });
 });
