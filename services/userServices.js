@@ -26,7 +26,6 @@ const createNewUser = async (fname, lname, email, password) => {
 //Find User by email
 const checkCredentials = async (email, password) => {
   const user = await User.findOne({ email });
-  console.log(user);
   if (!user) {
     return {
       code: 404,

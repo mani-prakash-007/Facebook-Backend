@@ -1,12 +1,19 @@
 // getComment , createComment , updateComment,  deleteComment,
 const Post = require("../models/postSchema");
 const Comment = require("../models/commentSchema");
-const Joi = require("joi");
 const {
   validateComment,
   validateCommentId,
 } = require("../validations/commentValidations");
 const { validatePostId } = require("../validations/postValidations");
+const { findPostByPostId } = require("../services/postServices");
+const {
+  createTheComment,
+  getCommentsByPostId,
+  updateTheComment,
+  getCommentById,
+  deleteTheComment,
+} = require("../services/commentServices");
 
 //Getting All Comments
 const getComment = async (req, res) => {
@@ -20,12 +27,12 @@ const getComment = async (req, res) => {
         .json({ Error: postIdValidation.details[0].message });
     }
     //Fetching Post by id and Returning the all comments of the post
-    const post = await Post.findById(postId);
+    const post = await findPostByPostId(postId);
     if (!post) {
       return res.status(404).json({ Error: "Post not Found" });
     }
-    const AllComment = await Comment.find({ post: post.id });
-    res.status(200).json({ All_Comments: AllComment });
+    const gettingComments = await getCommentsByPostId(postId);
+    res.status(gettingComments.Statuscode).json(gettingComments);
   } catch (error) {
     console.error("Error on fetching comments \n", error);
     res.status(500).json({ Error: "Server Error" });
@@ -52,28 +59,23 @@ const createComment = async (req, res) => {
         .json({ Error: postIdValidation.details[0].message });
     }
     //Fetching post
-    const post = await Post.findById(postId);
+    const post = await findPostByPostId(postId);
     if (!post) {
       return res.status(404).json({ Error: "Post Not Found" });
     }
-    const user_id = req.user.id;
-    if (!user_id) {
+    //Checking User id
+    const userId = req.user.id;
+    if (!userId) {
       return res.status(401).json({ Error: "Login to Add Comment" });
     }
     //add user id to comment array in commentSchema
-    if (!post.comments.includes(user_id)) {
-      post.comments.push(user_id);
+    if (!post.comments.includes(userId)) {
+      post.comments.push(userId);
       await post.save();
     }
     //creating comment for the post
-    const comment_data = await Comment.create({
-      user: req.user.id,
-      post: req.params.id,
-      comment: comment,
-    });
-    res
-      .status(200)
-      .json({ Status: "Comment Added", comment_Data: comment_data });
+    const comentingProcess = await createTheComment(comment, postId, userId);
+    res.status(comentingProcess.Statuscode).json({ comentingProcess });
   } catch (error) {
     console.error("Error on creating comment \n", error);
     res.status(500).json({ Error: "Server Error" });
@@ -85,6 +87,7 @@ const updateComment = async (req, res) => {
   try {
     //Validating Comment
     const { comment } = req.body;
+    const currentUserId = req.user.id;
     const commentValidation = await validateComment(comment);
     if (commentValidation) {
       return res
@@ -100,31 +103,12 @@ const updateComment = async (req, res) => {
         .json({ Error: commentIdValidation.details[0].message });
     }
     // fetching comment by id
-    const comment_data = await Comment.findById(commentId);
-    if (!comment_data) {
-      res.status(404).json({ Error: "Comment not Found" });
-    }
-    //updating comment
-    if (req.user.id == comment_data.user) {
-      try {
-        const updatedComment = await Comment.findByIdAndUpdate(
-          req.params.id,
-          { comment: comment },
-          {
-            new: true,
-          }
-        );
-        res
-          .status(200)
-          .json({ Status: "Comment Updated", Updated_Comment: updatedComment });
-      } catch (error) {
-        return res
-          .status(400)
-          .json({ Status: "Comment not Updated", Error: error.message });
-      }
-    } else {
-      res.status(403).json({ Error: "Comment not Belongs to current user" });
-    }
+    const updatingComment = await updateTheComment(
+      commentId,
+      currentUserId,
+      comment
+    );
+    res.status(updatingComment.Statuscode).json({ updatingComment });
   } catch (error) {
     console.error("Error on updating Comment \n", error);
     return res.status(500).json({ Error: "Internal Server Error" });
@@ -136,40 +120,16 @@ const deleteComment = async (req, res) => {
   try {
     //Validating Comment id..
     const commentId = req.params.id;
+    const currentUserId = req.user.id;
     const commentIdValidation = await validateCommentId(commentId);
     if (commentIdValidation) {
       return res
         .status(400)
         .json({ Error: commentIdValidation.details[0].message });
     }
-    //fetching comment by id
-    const comment_data = await Comment.findById(commentId);
-    if (!comment_data) {
-      return res.status(404).json({ Error: "Comment not Found" });
-    }
-    const user = comment_data.user;
-    const post = comment_data.post;
-    //fetching post by id
-    const post_data = await Post.findById(post);
-    //Removing userId from post.comment
-    if (req.user.id == comment_data.user) {
-      if (post_data.comments.includes(user)) {
-        post_data.comments.pop(comment_data.user);
-        await post_data.save();
-        console.log("Popped user id from post");
-      }
-      //deleting comment
-      try {
-        await Comment.findByIdAndDelete(req.params.id);
-        return res.status(200).json({ Status: " Comment Deleted" });
-      } catch (error) {
-        return res
-          .status(400)
-          .json({ Status: "Comment not Deleted", Error: error.message });
-      }
-    } else {
-      res.status(403).json({ Error: "Comment not Belongs to current user " });
-    }
+    //Deleting Comment
+    const deletingProcess = await deleteTheComment(commentId, currentUserId);
+    res.status(deletingProcess.StatusCode).json({ deletingProcess });
   } catch (error) {
     console.error("Error on Deleting Comment \n", error);
     res.status(500).json({ Error: "Internal Server Error" });
@@ -188,7 +148,7 @@ const addLike = async (req, res) => {
         .json({ Error: commentIdValidation.details[0].message });
     }
     //fetching comment
-    const comment = await Comment.findById(commentId);
+    const comment = await getCommentById(commentId);
     const currentUserId = req.user.id;
     //Checking the comment exist
     if (!comment) {
@@ -226,7 +186,7 @@ const addDislike = async (req, res) => {
         .json({ Error: commentIdValidation.details[0].message });
     }
     //fetching comment
-    const comment = await Comment.findById(commentId);
+    const comment = await getCommentById(commentId);
     const currentUserId = req.user.id;
     //Checking the comment exist
     if (!comment) {
