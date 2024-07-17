@@ -6,7 +6,7 @@ const {
   createPost,
   updatePost,
   deletePost,
-  get_AllPost,
+  getAllPost,
   getMyPost,
   addLike,
   addDislike,
@@ -17,8 +17,8 @@ const {
 postRouter.post("/", Authorization, createPost);
 postRouter.put("/:id", Authorization, updatePost);
 postRouter.delete("/:id", Authorization, deletePost);
-postRouter.get("/allpost", Authorization, get_AllPost);
-postRouter.get("/mypost", Authorization, getMyPost);//Add new route
+postRouter.get("/allpost", Authorization, getAllPost);
+postRouter.get("/mypost", Authorization, getMyPost); //Add new route
 postRouter.get("/:id", Authorization, getPost);
 postRouter.post("/like/:id", Authorization, addLike);
 postRouter.post("/dislike/:id", Authorization, addDislike);

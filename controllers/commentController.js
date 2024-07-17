@@ -1,11 +1,29 @@
 // getComment , createComment , updateComment,  deleteComment,
 const Post = require("../models/postSchema");
 const Comment = require("../models/commentSchema");
+const Joi = require("joi");
 
 //Getting All Comments
 const getComment = async (req, res) => {
   try {
-    const post = await Post.findById(req.params.id);
+    //Checking Post ID
+    const postId = req.params.id;
+    const postIdSchema = Joi.object({
+      id: Joi.string().pattern(new RegExp("^[0-9a-fA-F]{24}$")).messages({
+        "string.pattern.base":
+          "Invalid ID format. Please provide a valid 24-character hexadecimal ID.",
+      }),
+    });
+    const { error: postIdError, value: postIdValue } = postIdSchema.validate({
+      id: postId,
+    });
+    if (postIdError) {
+      return res
+        .status(400)
+        .json({ postIdError: postIdError.details[0].message });
+    }
+    //Fetching Post by id and Returning the all comments of the post
+    const post = await Post.findById(postId);
     if (!post) {
       return res.status(404).json({ Error: "Post not Found" });
     }
@@ -20,8 +38,38 @@ const getComment = async (req, res) => {
 //Creating Comment
 const createComment = async (req, res) => {
   try {
+    // Checking the req.body field
     const { comment } = req.body;
-    const post = await Post.findById(req.params.id);
+    const commentSchema = Joi.object({
+      comment: Joi.string().min(1).required().messages({
+        "string.min": "Comment must contain at least 1 letter.",
+        "any.required": "Comment is required.",
+      }),
+    });
+    const { error: commentError, value: commentValue } = commentSchema.validate(
+      {
+        comment: comment,
+      }
+    );
+    if (commentError) {
+      return res.status(400).json({ Error: commentError.details[0].message });
+    }
+    //checking the post id
+    const postId = req.params.id;
+    const postIdSchema = Joi.object({
+      id: Joi.string().pattern(new RegExp("^[0-9a-fA-F]{24}$")).messages({
+        "string.pattern.base":
+          "Invalid ID format. Please provide a valid 24-character hexadecimal ID.",
+      }),
+    });
+    const { error: postIdError, value: postIdValue } = postIdSchema.validate({
+      id: postId,
+    });
+    if (postIdError) {
+      return res.status(400).json({ Error: postIdError.details[0].message });
+    }
+    //Fetching post
+    const post = await Post.findById(postId);
     if (!post) {
       return res.status(404).json({ Error: "Post Not Found" });
     }
@@ -29,15 +77,12 @@ const createComment = async (req, res) => {
     if (!user_id) {
       return res.status(401).json({ Error: "Login to Add Comment" });
     }
-    if (!comment) {
-      return res.status(400).json({ Error: "Enter Comment...!!" });
-    }
     //add user id to comment array in commentSchema
     if (!post.comments.includes(user_id)) {
       post.comments.push(user_id);
       await post.save();
     }
-    //
+    //creating comment for the post
     const comment_data = await Comment.create({
       user: req.user.id,
       post: req.params.id,
@@ -55,15 +100,48 @@ const createComment = async (req, res) => {
 //Update Comment
 const updateComment = async (req, res) => {
   try {
-    const comment_data = await Comment.findById(req.params.id);
+    // checking the req.body field
+    const { comment } = req.body;
+    const commentSchema = Joi.object({
+      comment: Joi.string().min(1).required().messages({
+        "string.min": "Comment must contain at least 1 letter.",
+        "any.required": "Comment is required.",
+      }),
+    });
+    const { error: commentError, value: commentValue } = commentSchema.validate(
+      {
+        comment: comment,
+      }
+    );
+    if (commentError) {
+      return res.status(400).json({ Error: commentError.details[0].message });
+    }
+    //Checking Comment id..
+    const commentId = req.params.id;
+    const commentIdSchema = Joi.object({
+      Id: Joi.string().pattern(new RegExp("^[0-9a-fA-F]{24}$")).messages({
+        "string.pattern.base":
+          "Invalid ID format. Please provide a valid 24-character hexadecimal ID.",
+      }),
+    });
+    const { error: commentIdError, value: commentIdValue } =
+      commentIdSchema.validate({
+        Id: commentId,
+      });
+    if (commentIdError) {
+      return res.status(400).json({ Error: commentIdError.details[0].message });
+    }
+    // fetching comment by id
+    const comment_data = await Comment.findById(commentId);
     if (!comment_data) {
       res.status(404).json({ Error: "Comment not Found" });
     }
+    //updating comment
     if (req.user.id == comment_data.user) {
       try {
         const updatedComment = await Comment.findByIdAndUpdate(
           req.params.id,
-          req.body,
+          { comment: comment },
           {
             new: true,
           }
@@ -88,20 +166,37 @@ const updateComment = async (req, res) => {
 //Delete comment
 const deleteComment = async (req, res) => {
   try {
-    const comment_data = await Comment.findById(req.params.id);
+    //Checking Comment id..
+    const commentId = req.params.id;
+    const commentIdSchema = Joi.object({
+      Id: Joi.string().pattern(new RegExp("^[0-9a-fA-F]{24}$")).messages({
+        "string.pattern.base":
+          "Invalid ID format. Please provide a valid 24-character hexadecimal ID.",
+      }),
+    });
+    const { error: commentIdError, value: commentIdValue } =
+      commentIdSchema.validate({
+        Id: commentId,
+      });
+    if (commentIdError) {
+      return res.status(400).json({ Error: commentIdError.details[0].message });
+    }
+    //fetching comment by id
+    const comment_data = await Comment.findById(commentId);
     if (!comment_data) {
       return res.status(404).json({ Error: "Comment not Found" });
     }
     const user = comment_data.user;
     const post = comment_data.post;
+    //fetching post by id
     const post_data = await Post.findById(post);
-
     if (req.user.id == comment_data.user) {
       if (post_data.comments.includes(user)) {
         post_data.comments.pop(comment_data.user);
         await post_data.save();
         console.log("Popped user id from post");
       }
+      //deleting comment
       try {
         await Comment.findByIdAndDelete(req.params.id);
         return res.status(200).json({ Status: " Comment Deleted" });
@@ -122,19 +217,39 @@ const deleteComment = async (req, res) => {
 //Toggling Like to Comment...
 const addLike = async (req, res) => {
   try {
-    const comment = await Comment.findById(req.params.id);
-    const curr_user_id = req.user.id;
-
-    if (!comment.likes.includes(curr_user_id)) {
-      if (comment.dislike.includes(curr_user_id)) {
-        comment.dislike.pop();
+    //Checking Comment id..
+    const commentId = req.params.id;
+    const commentIdSchema = Joi.object({
+      Id: Joi.string().pattern(new RegExp("^[0-9a-fA-F]{24}$")).messages({
+        "string.pattern.base":
+          "Invalid ID format. Please provide a valid 24-character hexadecimal ID.",
+      }),
+    });
+    const { error: commentIdError, value: commentIdValue } =
+      commentIdSchema.validate({
+        Id: commentId,
+      });
+    if (commentIdError) {
+      return res.status(400).json({ Error: commentIdError.details[0].message });
+    }
+    //fetching comment
+    const comment = await Comment.findById(commentId);
+    const currentUserId = req.user.id;
+    //Checking the comment exist
+    if (!comment) {
+      return res.status(404).json({ Error: "Comment not found" });
+    }
+    //Toggling like for the comment
+    if (!comment.likes.includes(currentUserId)) {
+      if (comment.dislikes.includes(currentUserId)) {
+        comment.dislikes.pop();
         await comment.save();
       }
-      comment.likes.push(curr_user_id);
+      comment.likes.push(currentUserId);
       await comment.save();
       res.status(200).json({ Status: "Like added to comment" });
-    } else if (comment.likes.includes(curr_user_id)) {
-      comment.likes.pop(curr_user_id);
+    } else if (comment.likes.includes(currentUserId)) {
+      comment.likes.pop(currentUserId);
       await comment.save();
       res.status(200).json({ Status: "Like removed from comment" });
     }
@@ -147,21 +262,39 @@ const addLike = async (req, res) => {
 //Toggling Dislike to Comment...
 const addDislike = async (req, res) => {
   try {
-    const comment = await Comment.findById(req.params.id);
-    const curr_user_id = req.user.id;
-    console.log(comment);
-    console.log(curr_user_id);
-
-    if (!comment.dislike.includes(curr_user_id)) {
-      if (comment.likes.includes(curr_user_id)) {
+    //Checking Comment id..
+    const commentId = req.params.id;
+    const commentIdSchema = Joi.object({
+      Id: Joi.string().pattern(new RegExp("^[0-9a-fA-F]{24}$")).messages({
+        "string.pattern.base":
+          "Invalid ID format. Please provide a valid 24-character hexadecimal ID.",
+      }),
+    });
+    const { error: commentIdError, value: commentIdValue } =
+      commentIdSchema.validate({
+        Id: commentId,
+      });
+    if (commentIdError) {
+      return res.status(400).json({ Error: commentIdError.details[0].message });
+    }
+    //fetching comment
+    const comment = await Comment.findById(commentId);
+    const currentUserId = req.user.id;
+    //Checking the comment exist
+    if (!comment) {
+      return res.status(404).json({ Error: "Comment not found" });
+    }
+    //toggling dislikes to comment
+    if (!comment.dislikes.includes(currentUserId)) {
+      if (comment.likes.includes(currentUserId)) {
         comment.likes.pop();
         await comment.save();
       }
-      comment.dislike.push(curr_user_id);
+      comment.dislikes.push(currentUserId);
       await comment.save();
       res.status(200).json({ Status: "Dislike added to comment" });
-    } else if (comment.dislike.includes(curr_user_id)) {
-      comment.dislike.pop(curr_user_id);
+    } else if (comment.dislikes.includes(currentUserId)) {
+      comment.dislikes.pop(currentUserId);
       await comment.save();
       res.status(200).json({ Status: "Dislike removed from comment" });
     }

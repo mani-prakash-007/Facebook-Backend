@@ -15,7 +15,7 @@ commentRoute.get("/:id", Authorization, getComment);
 commentRoute.post("/:id", Authorization, createComment);
 commentRoute.put("/:id", Authorization, updateComment);
 commentRoute.delete("/:id", Authorization, deleteComment);
-commentRoute.post("/like/:id", Authorization, addLike);//Added
-commentRoute.post("/dislike/:id", Authorization, addDislike);//Added
+commentRoute.post("/like/:id", Authorization, addLike); //Added
+commentRoute.post("/dislike/:id", Authorization, addDislike); //Added
 
 module.exports = commentRoute;

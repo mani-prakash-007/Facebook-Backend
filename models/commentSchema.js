@@ -20,7 +20,7 @@ const commentSchema = mongoose.Schema(
     likes: {
       type: [String],
     },
-    dislike: {
+    dislikes: {
       type: [String],
     },
   },
