@@ -1,6 +1,4 @@
-// getComment , createComment , updateComment,  deleteComment,
-const Post = require("../models/postSchema");
-const Comment = require("../models/commentSchema");
+//Importing Services and Validations
 const {
   validateComment,
   validateCommentId,

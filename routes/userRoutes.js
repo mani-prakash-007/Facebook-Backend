@@ -1,4 +1,3 @@
-// Register , Login , getCurrentUser
 const express = require("express");
 const userRouter = express.Router();
 const { Authorization } = require("../middleware/AuthMidWare");

@@ -1,7 +1,4 @@
-//Importing User Schema and Bcrypt
-const User = require("../models/userSchema");
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
+//Importing Services and Validations
 const {
   checkUserExist,
   createNewUser,

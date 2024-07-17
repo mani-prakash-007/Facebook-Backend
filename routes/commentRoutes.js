@@ -1,4 +1,3 @@
-// get Comment , Create Comment , Update Comment , Delete Comment
 const express = require("express");
 const commentRoute = express.Router();
 const { Authorization } = require("../middleware/AuthMidWare");
@@ -15,7 +14,7 @@ commentRoute.get("/:id", Authorization, getComment);
 commentRoute.post("/:id", Authorization, createComment);
 commentRoute.put("/:id", Authorization, updateComment);
 commentRoute.delete("/:id", Authorization, deleteComment);
-commentRoute.post("/like/:id", Authorization, addLike); //Added
-commentRoute.post("/dislike/:id", Authorization, addDislike); //Added
+commentRoute.post("/like/:id", Authorization, addLike); 
+commentRoute.post("/dislike/:id", Authorization, addDislike);
 
 module.exports = commentRoute;
