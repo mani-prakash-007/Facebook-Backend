@@ -3,7 +3,10 @@ const User = require("../models/userSchema");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const Joi = require("joi");
-const { validateRegisterFields , validateLoginFiled } = require("../validations/userValidations");
+const {
+  validateRegisterFields,
+  validateLoginFiled,
+} = require("../validations/userValidations");
 
 //Controllers
 //Register User - Controller
@@ -51,7 +54,7 @@ const loginUser = async (req, res) => {
   try {
     //Checking req.body
     const { email, password } = req.body;
-    const validation = await validateLoginFiled({ email , password })
+    const validation = await validateLoginFiled({ email, password });
     if (validation) {
       return res.status(400).json({ Error: validation.details[0].message });
     }

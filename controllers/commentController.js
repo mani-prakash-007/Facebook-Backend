@@ -2,25 +2,22 @@
 const Post = require("../models/postSchema");
 const Comment = require("../models/commentSchema");
 const Joi = require("joi");
+const {
+  validateComment,
+  validateCommentId,
+} = require("../validations/commentValidations");
+const { validatePostId } = require("../validations/postValidations");
 
 //Getting All Comments
 const getComment = async (req, res) => {
   try {
-    //Checking Post ID
+    //Validating postid
     const postId = req.params.id;
-    const postIdSchema = Joi.object({
-      id: Joi.string().pattern(new RegExp("^[0-9a-fA-F]{24}$")).messages({
-        "string.pattern.base":
-          "Invalid ID format. Please provide a valid 24-character hexadecimal ID.",
-      }),
-    });
-    const { error: postIdError, value: postIdValue } = postIdSchema.validate({
-      id: postId,
-    });
-    if (postIdError) {
+    const postIdValidation = await validatePostId(postId);
+    if (postIdValidation) {
       return res
         .status(400)
-        .json({ postIdError: postIdError.details[0].message });
+        .json({ Error: postIdValidation.details[0].message });
     }
     //Fetching Post by id and Returning the all comments of the post
     const post = await Post.findById(postId);
@@ -38,35 +35,21 @@ const getComment = async (req, res) => {
 //Creating Comment
 const createComment = async (req, res) => {
   try {
-    // Checking the req.body field
+    // Validating Comment
     const { comment } = req.body;
-    const commentSchema = Joi.object({
-      comment: Joi.string().min(1).required().messages({
-        "string.min": "Comment must contain at least 1 letter.",
-        "any.required": "Comment is required.",
-      }),
-    });
-    const { error: commentError, value: commentValue } = commentSchema.validate(
-      {
-        comment: comment,
-      }
-    );
-    if (commentError) {
-      return res.status(400).json({ Error: commentError.details[0].message });
+    const commentValidation = await validateComment(comment);
+    if (commentValidation) {
+      return res
+        .status(400)
+        .json({ Error: commentValidation.details[0].message });
     }
-    //checking the post id
+    //Validating PostId
     const postId = req.params.id;
-    const postIdSchema = Joi.object({
-      id: Joi.string().pattern(new RegExp("^[0-9a-fA-F]{24}$")).messages({
-        "string.pattern.base":
-          "Invalid ID format. Please provide a valid 24-character hexadecimal ID.",
-      }),
-    });
-    const { error: postIdError, value: postIdValue } = postIdSchema.validate({
-      id: postId,
-    });
-    if (postIdError) {
-      return res.status(400).json({ Error: postIdError.details[0].message });
+    const postIdValidation = await validatePostId(postId);
+    if (postIdValidation) {
+      return res
+        .status(400)
+        .json({ Error: postIdValidation.details[0].message });
     }
     //Fetching post
     const post = await Post.findById(postId);
@@ -100,36 +83,21 @@ const createComment = async (req, res) => {
 //Update Comment
 const updateComment = async (req, res) => {
   try {
-    // checking the req.body field
+    //Validating Comment
     const { comment } = req.body;
-    const commentSchema = Joi.object({
-      comment: Joi.string().min(1).required().messages({
-        "string.min": "Comment must contain at least 1 letter.",
-        "any.required": "Comment is required.",
-      }),
-    });
-    const { error: commentError, value: commentValue } = commentSchema.validate(
-      {
-        comment: comment,
-      }
-    );
-    if (commentError) {
-      return res.status(400).json({ Error: commentError.details[0].message });
+    const commentValidation = await validateComment(comment);
+    if (commentValidation) {
+      return res
+        .status(400)
+        .json({ Error: commentValidation.details[0].message });
     }
-    //Checking Comment id..
+    //Validating Comment id..
     const commentId = req.params.id;
-    const commentIdSchema = Joi.object({
-      Id: Joi.string().pattern(new RegExp("^[0-9a-fA-F]{24}$")).messages({
-        "string.pattern.base":
-          "Invalid ID format. Please provide a valid 24-character hexadecimal ID.",
-      }),
-    });
-    const { error: commentIdError, value: commentIdValue } =
-      commentIdSchema.validate({
-        Id: commentId,
-      });
-    if (commentIdError) {
-      return res.status(400).json({ Error: commentIdError.details[0].message });
+    const commentIdValidation = await validateCommentId(commentId);
+    if (commentIdValidation) {
+      return res
+        .status(400)
+        .json({ Error: commentIdValidation.details[0].message });
     }
     // fetching comment by id
     const comment_data = await Comment.findById(commentId);
@@ -166,20 +134,13 @@ const updateComment = async (req, res) => {
 //Delete comment
 const deleteComment = async (req, res) => {
   try {
-    //Checking Comment id..
+    //Validating Comment id..
     const commentId = req.params.id;
-    const commentIdSchema = Joi.object({
-      Id: Joi.string().pattern(new RegExp("^[0-9a-fA-F]{24}$")).messages({
-        "string.pattern.base":
-          "Invalid ID format. Please provide a valid 24-character hexadecimal ID.",
-      }),
-    });
-    const { error: commentIdError, value: commentIdValue } =
-      commentIdSchema.validate({
-        Id: commentId,
-      });
-    if (commentIdError) {
-      return res.status(400).json({ Error: commentIdError.details[0].message });
+    const commentIdValidation = await validateCommentId(commentId);
+    if (commentIdValidation) {
+      return res
+        .status(400)
+        .json({ Error: commentIdValidation.details[0].message });
     }
     //fetching comment by id
     const comment_data = await Comment.findById(commentId);
@@ -219,18 +180,11 @@ const addLike = async (req, res) => {
   try {
     //Checking Comment id..
     const commentId = req.params.id;
-    const commentIdSchema = Joi.object({
-      Id: Joi.string().pattern(new RegExp("^[0-9a-fA-F]{24}$")).messages({
-        "string.pattern.base":
-          "Invalid ID format. Please provide a valid 24-character hexadecimal ID.",
-      }),
-    });
-    const { error: commentIdError, value: commentIdValue } =
-      commentIdSchema.validate({
-        Id: commentId,
-      });
-    if (commentIdError) {
-      return res.status(400).json({ Error: commentIdError.details[0].message });
+    const commentIdValidation = await validateCommentId(commentId);
+    if (commentIdValidation) {
+      return res
+        .status(400)
+        .json({ Error: commentIdValidation.details[0].message });
     }
     //fetching comment
     const comment = await Comment.findById(commentId);
@@ -264,18 +218,11 @@ const addDislike = async (req, res) => {
   try {
     //Checking Comment id..
     const commentId = req.params.id;
-    const commentIdSchema = Joi.object({
-      Id: Joi.string().pattern(new RegExp("^[0-9a-fA-F]{24}$")).messages({
-        "string.pattern.base":
-          "Invalid ID format. Please provide a valid 24-character hexadecimal ID.",
-      }),
-    });
-    const { error: commentIdError, value: commentIdValue } =
-      commentIdSchema.validate({
-        Id: commentId,
-      });
-    if (commentIdError) {
-      return res.status(400).json({ Error: commentIdError.details[0].message });
+    const commentIdValidation = await validateCommentId(commentId);
+    if (commentIdValidation) {
+      return res
+        .status(400)
+        .json({ Error: commentIdValidation.details[0].message });
     }
     //fetching comment
     const comment = await Comment.findById(commentId);

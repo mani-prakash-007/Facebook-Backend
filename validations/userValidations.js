@@ -1,4 +1,6 @@
 const Joi = require("joi");
+const { joiPasswordExtendCore } = require("joi-password");
+const JoiPassword = Joi.extend(joiPasswordExtendCore);
 //Validation on Register Field
 const validateRegisterFields = async ({ fname, lname, email, password }) => {
   const registerSchema = Joi.object({
@@ -18,22 +20,28 @@ const validateRegisterFields = async ({ fname, lname, email, password }) => {
           "Please enter a valid email address with a domain of .com, .net, or .org.",
         "any.required": "Email is required.",
       }),
-    password: Joi.string()
+    password: JoiPassword.string()
       .min(8)
       .max(30)
-      .pattern(
-        new RegExp(
-          "^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[./,@#%])[A-Za-z0-9./,@#%]+$"
-        )
-      )
+      .minOfSpecialCharacters(1)
+      .minOfLowercase(1)
+      .minOfUppercase(1)
+      .minOfNumeric(1)
+      .noWhiteSpaces()
+      .required()
       .messages({
-        "string.pattern.base":
-          "Password must contain at least one uppercase letter( A-Z ), one lowercase letter( a-z ), one digit( 0-9 ), and one special character (./,@#%).",
-        "string.min": "Password must be at least 8 characters long.",
-        "string.max": "Password must be at most 30 characters long.",
-        "any.required": "Password is required.",
-      })
-      .required(),
+        "password.min": "Password must contain at least 8 character",
+        "password.max": "Password must contain at most 30 character",
+        "password.minOfUppercase":
+          "Password should contain at least one uppercase character",
+        "password.minOfSpecialCharacters":
+          "Password should contain at least one special character",
+        "password.minOfLowercase":
+          "Password should contain at least one lowercase character",
+        "password.minOfNumeric":
+          "Password should contain at least one numeric character",
+        "password.noWhiteSpaces": "Password should not contain white spaces",
+      }),
   }).with("fname", "lname");
   const { error, value } = registerSchema.validate({
     fname: fname,
@@ -42,7 +50,6 @@ const validateRegisterFields = async ({ fname, lname, email, password }) => {
     password: password,
   });
   if (error) {
-    console.log("Error msg (validation)", error);
     return error;
   }
 };
