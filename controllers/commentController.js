@@ -151,6 +151,7 @@ const deleteComment = async (req, res) => {
     const post = comment_data.post;
     //fetching post by id
     const post_data = await Post.findById(post);
+    //Removing userId from post.comment
     if (req.user.id == comment_data.user) {
       if (post_data.comments.includes(user)) {
         post_data.comments.pop(comment_data.user);

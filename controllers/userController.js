@@ -2,10 +2,14 @@
 const User = require("../models/userSchema");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const Joi = require("joi");
+const {
+  checkUserExist,
+  createNewUser,
+  checkCredentials,
+} = require("../services/userServices");
 const {
   validateRegisterFields,
-  validateLoginFiled,
+  validateLoginFields,
 } = require("../validations/userValidations");
 
 //Controllers
@@ -24,22 +28,14 @@ const registerUser = async (req, res) => {
       return res.status(400).json({ Error: validation.details[0].message });
     }
     //Checking the Email is Existing
-    const ExistUser = await User.findOne({ email });
+    const ExistUser = await checkUserExist(email);
     if (ExistUser) {
       return res
         .status(409)
         .json({ Error: "Email already Exist. Please Login..." });
     }
-    //Hashing the Password
-    const salt = await bcrypt.genSalt(10);
-    const HashedPassword = await bcrypt.hash(password, salt);
     //Creating user
-    const user = await User.create({
-      first_name: fname,
-      last_name: lname,
-      email: email,
-      password: HashedPassword,
-    });
+    const user = await createNewUser(fname, lname, email, password);
     res
       .status(200)
       .json({ Status: "Register Successful...!!", UserData: user });
@@ -54,32 +50,13 @@ const loginUser = async (req, res) => {
   try {
     //Checking req.body
     const { email, password } = req.body;
-    const validation = await validateLoginFiled({ email, password });
+    const validation = await validateLoginFields({ email, password });
     if (validation) {
       return res.status(400).json({ Error: validation.details[0].message });
     }
-    //Getting user details from db
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res
-        .status(404)
-        .json({ Error: "Login Failed . Check Username / Password" });
-    }
-    //Comparing User and Password then generating Auth token(jwt)
-    if (
-      user.email === email &&
-      (await bcrypt.compare(password, user.password))
-    ) {
-      return res.status(200).json({
-        Status: "Login Success",
-        user_Data: { ...user._doc, password: undefined },
-        token: GenerateToken(user._id),
-      });
-    } else {
-      res
-        .status(401)
-        .json({ Error: "Login Failed . Check Username / Password" });
-    }
+    //Checking the Login Credentials..
+    const user = await checkCredentials(email, password);
+    res.status(user.code).json({ Status: user });
   } catch (error) {
     console.error("Error on logging in \n", error);
     return res.status(500).json({ Error: "Server Error" });
@@ -94,11 +71,6 @@ const getCurrUser = (req, res) => {
     console.error("Error on fetching current user \n", error);
     return res.status(500).json({ Error: "Server Error." });
   }
-};
-//Functions for Validation...
-//Generate JWT token for authorization
-const GenerateToken = (id) => {
-  return jwt.sign({ id }, process.env.SECRET_KEY, { expiresIn: "10d" });
 };
 
 module.exports = { registerUser, loginUser, getCurrUser };

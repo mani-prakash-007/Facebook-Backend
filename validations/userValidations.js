@@ -55,7 +55,7 @@ const validateRegisterFields = async ({ fname, lname, email, password }) => {
 };
 
 //Validation on Login Field
-const validateLoginFiled = async ({ email, password }) => {
+const validateLoginFields = async ({ email, password }) => {
   const loginSchema = Joi.object({
     email: Joi.string()
       .email({ minDomainSegments: 2, tlds: { allow: ["com", "net", "org"] } })
@@ -76,4 +76,4 @@ const validateLoginFiled = async ({ email, password }) => {
   }
 };
 
-module.exports = { validateRegisterFields, validateLoginFiled };
+module.exports = { validateRegisterFields, validateLoginFields };
