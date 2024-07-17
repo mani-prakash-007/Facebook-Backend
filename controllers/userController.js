@@ -3,6 +3,7 @@ const User = require("../models/userSchema");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const Joi = require("joi");
+const { validateRegisterFields , validateLoginFiled } = require("../validations/userValidations");
 
 //Controllers
 //Register User - Controller
@@ -10,46 +11,14 @@ const registerUser = async (req, res) => {
   try {
     //Checking req.body
     const { fname, lname, email, password } = req.body;
-    const schema = Joi.object({
-      fname: Joi.string().min(3).max(50).required().messages({
-        "string.pattern.base":
-          "First Name must contain minimum least 3 letters and maximum 50 letters.",
-      }),
-      lname: Joi.string().min(3).max(50).required().messages({
-        "string.pattern.base":
-          "Last Name must contain minimum least 3 letters and maximum 50 letters.",
-      }),
-      email: Joi.string()
-        .email({ minDomainSegments: 2, tlds: { allow: ["com", "net", "org"] } })
-        .required()
-        .messages({
-          "string.email":
-            "Please enter a valid email address with a domain of .com, .net, or .org.",
-          "any.required": "Email is required.",
-        }),
-      password: Joi.string()
-        .min(8)
-        .max(30)
-        .pattern(
-          new RegExp("^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[./,@#%])$")
-        )
-        .messages({
-          "string.pattern.base":
-            "Password must contain at least one uppercase letter( A-Z ), one lowercase letter( a-z ), one digit( 0-9 ), and one special character (./,@#%).",
-          "string.min": "Password must be at least 8 characters long.",
-          "string.max": "Password must be at most 30 characters long.",
-          "any.required": "Password is required.",
-        })
-        .required(),
-    }).with("fname", "lname");
-    const { error, value } = schema.validate({
-      fname: fname,
-      lname: lname,
-      email: email,
-      password: password,
+    const validation = await validateRegisterFields({
+      fname,
+      lname,
+      email,
+      password,
     });
-    if (error) {
-      return res.status(400).json({ Error: error.details[0].message });
+    if (validation) {
+      return res.status(400).json({ Error: validation.details[0].message });
     }
     //Checking the Email is Existing
     const ExistUser = await User.findOne({ email });
@@ -82,23 +51,9 @@ const loginUser = async (req, res) => {
   try {
     //Checking req.body
     const { email, password } = req.body;
-    const schema = Joi.object({
-      email: Joi.string()
-        .email({ minDomainSegments: 2, tlds: { allow: ["com", "net", "org"] } })
-        .messages({
-          "string.email":
-            "Please enter a valid email address with a domain of .com, .net, or .org.",
-          "any.required": "Email is required.",
-        })
-        .required(),
-      password: Joi.string().required(),
-    });
-    const { error, value } = schema.validate({
-      email: email,
-      password: password,
-    });
-    if (error) {
-      return res.status(400).json({ Error: error.details[0].message });
+    const validation = await validateLoginFiled({ email , password })
+    if (validation) {
+      return res.status(400).json({ Error: validation.details[0].message });
     }
     //Getting user details from db
     const user = await User.findOne({ email });
