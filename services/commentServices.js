@@ -1,16 +1,26 @@
 const Comment = require("../models/commentSchema");
 const { findPostByPostId } = require("../services/postServices");
 
-const createTheComment = async (comment, postId, userId) => {
+//Creating Comment
+const createTheComment = async (comment, postId, currentUserId) => {
+  const post = await findPostByPostId(postId);
+  if (!post) {
+    return { Statuscode: 404, Error: "Post not Found" };
+  }
+  if (!currentUserId) {
+    return { Statuscode: 404, Error: "Current userId not Found" };
+  }
+  post.comments.push(currentUserId);
+  await post.save();
   const commentData = await Comment.create({
-    user: userId,
+    user: currentUserId,
     post: postId,
     comment: comment,
   });
   return { Statuscode: 200, Status: "Comment Added", CommentData: commentData };
 };
 
-//
+//Getting Comment By PostID
 const getCommentsByPostId = async (postId) => {
   const commentData = await Comment.find({ post: postId });
   if (commentData.length > 0) {
@@ -20,11 +30,13 @@ const getCommentsByPostId = async (postId) => {
   }
 };
 
+// Getting Comment by CommentID
 const getCommentById = async (commentId) => {
   const comment = await Comment.findById(commentId);
   return comment;
 };
 
+//Updating the Comment
 const updateTheComment = async (commentId, currentUserId, comment) => {
   const commentData = await getCommentById(commentId);
   if (commentData != null) {
@@ -50,6 +62,7 @@ const updateTheComment = async (commentId, currentUserId, comment) => {
   }
 };
 
+//Deleting Comment
 const deleteTheComment = async (commentId, currentUserId) => {
   const commentData = await getCommentById(commentId);
   if (commentData != null) {

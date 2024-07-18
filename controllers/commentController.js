@@ -42,6 +42,8 @@ const createComment = async (req, res) => {
   try {
     // Validating Comment
     const { comment } = req.body;
+    const currentUserId = req.user.id;
+    const postId = req.params.id;
     const commentValidation = await validateComment(comment);
     if (commentValidation) {
       return res
@@ -49,30 +51,18 @@ const createComment = async (req, res) => {
         .json({ Error: commentValidation.details[0].message });
     }
     //Validating PostId
-    const postId = req.params.id;
     const postIdValidation = await validatePostId(postId);
     if (postIdValidation) {
       return res
         .status(400)
         .json({ Error: postIdValidation.details[0].message });
     }
-    //Fetching post
-    const post = await findPostByPostId(postId);
-    if (!post) {
-      return res.status(404).json({ Error: "Post Not Found" });
-    }
-    //Checking User id
-    const userId = req.user.id;
-    if (!userId) {
-      return res.status(401).json({ Error: "Login to Add Comment" });
-    }
-    //add user id to comment array in commentSchema
-    if (!post.comments.includes(userId)) {
-      post.comments.push(userId);
-      await post.save();
-    }
     //creating comment for the post
-    const comentingProcess = await createTheComment(comment, postId, userId);
+    const comentingProcess = await createTheComment(
+      comment,
+      postId,
+      currentUserId
+    );
     res.status(comentingProcess.Statuscode).json({ comentingProcess });
   } catch (error) {
     console.error("Error on creating comment \n", error);

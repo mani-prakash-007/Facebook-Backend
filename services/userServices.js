@@ -47,6 +47,6 @@ const checkCredentials = async (email, password) => {
 };
 //Generating JsonWebToken
 const GenerateToken = (id) => {
-  return jwt.sign({ id }, process.env.SECRET_KEY, { expiresIn: "10d" });
+  return jwt.sign({ id }, process.env.SECRET_KEY, { expiresIn: "5h" });
 };
 module.exports = { checkUserExist, createNewUser, checkCredentials };
