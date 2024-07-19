@@ -2,10 +2,11 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const app = express();
-require("dotenv").config();
 const PORT = process.env.PORT || 3030;
-
+const swaggerUi = require("swagger-ui-express");
+const swaggerDocument = require("./swagger.json");
 const { globalErrorHandler } = require("./middleware/errorHandler");
+require("dotenv").config();
 //Parsing Req.Body as Json and url enocded form
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -23,6 +24,13 @@ conn.once("open", () => {
 const userRoutes = require("./routes/userRoutes");
 const postRoutes = require("./routes/postRoutes");
 const commentRoutes = require("./routes/commentRoutes");
+app.use(
+  "/api-docs",
+  swaggerUi.serve,
+  swaggerUi.setup(swaggerDocument, {
+    explorer: true,
+  })
+);
 app.use("/api/user", userRoutes);
 app.use("/api/post", postRoutes);
 app.use("/api/post/comment", commentRoutes);
