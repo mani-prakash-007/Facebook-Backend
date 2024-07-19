@@ -1,32 +1,41 @@
+//Imports
 const Comment = require("../models/commentSchema");
 const { findPostByPostId } = require("../services/postServices");
+const {
+  notFoundError,
+  ownerShipError,
+} = require("../customErrors/customErrorClass");
 
+//Services
 //Creating Comment
 const createTheComment = async (comment, postId, currentUserId) => {
   const post = await findPostByPostId(postId);
   if (!post) {
-    return { Statuscode: 404, Error: "Post not Found" };
+    const error = new notFoundError("Post not Found");
+    return error;
   }
   if (!currentUserId) {
-    return { Statuscode: 404, Error: "Current userId not Found" };
+    const error = new notFoundError("Current userId not Found");
+    return error;
   }
-  post.comments.push(currentUserId);
-  await post.save();
   const commentData = await Comment.create({
     user: currentUserId,
     post: postId,
     comment: comment,
   });
-  return { Statuscode: 200, Status: "Comment Added", CommentData: commentData };
+  post.comments.push(commentData.id);
+  await post.save();
+  return { statusCode: 200, Status: "Comment Added", CommentData: commentData };
 };
 
 //Getting Comment By PostID
 const getCommentsByPostId = async (postId) => {
   const commentData = await Comment.find({ post: postId });
   if (commentData.length > 0) {
-    return { Statuscode: 200, Status: "Comments Found", Comments: commentData };
+    return { statusCode: 200, Status: "Comments Found", Comments: commentData };
   } else {
-    return { Statuscode: 200, Message: "No Comments for the Post" };
+    const error = new notFoundError("No Comments for the Post");
+    return error;
   }
 };
 
@@ -47,31 +56,34 @@ const updateTheComment = async (commentId, currentUserId, comment) => {
         { new: true }
       );
       return {
-        Statuscode: 200,
+        statusCode: 200,
         Status: " Comment Updated",
         UpdatedComment: updatedComment,
       };
     } else {
-      return {
-        Statuscode: 400,
-        Error: "Comment not Belongs to current user",
-      };
+      const error = new ownerShipError(" Post not belongs to Current User");
+      return error;
     }
   } else {
-    return { Statuscode: 400, Error: "Comment not found" };
+    const error = new notFoundError("Comment not Found");
+    return error;
   }
 };
 
 //Deleting Comment
 const deleteTheComment = async (commentId, currentUserId) => {
   const commentData = await getCommentById(commentId);
-  if (commentData != null) {
+  if (!commentData) {
+    const error = new notFoundError("Comment not Found");
+    return error;
+  }
+  if (commentData) {
     const postData = await findPostByPostId(commentData.post);
     if (
       currentUserId === commentData.user.toString() ||
       currentUserId === postData.user.toString()
     ) {
-      console.log("Inside Main condition");
+      console.log("Iner if condition");
       //Removing CommentUserId in the Post
       if (postData.comments.includes(commentData.user)) {
         postData.comments.pop(commentData.user);
@@ -79,12 +91,56 @@ const deleteTheComment = async (commentId, currentUserId) => {
       }
       //Deleting Comment
       await Comment.findByIdAndDelete(commentId);
-      return { StatusCode: 200, Status: "Comment Deleted" };
+      return { statusCode: 200, Status: "Comment Deleted" };
     } else {
-      return { StatusCode: 400, Error: "Comment not Belongs to current user" };
+      const error = new ownerShipError("Comment not belongs to Current User");
+      return error;
     }
   } else {
-    return { Statuscode: 400, Error: "Comment not found" };
+  }
+};
+
+//Toggling Like
+const toggleCommentLike = async (commentId, currentUserId) => {
+  const comment = await getCommentById(commentId);
+  if (!comment) {
+    const error = new notFoundError("Comment not found");
+    return error;
+  }
+  if (!comment.likes.includes(currentUserId)) {
+    if (comment.dislikes.includes(currentUserId)) {
+      comment.dislikes.pop();
+      await comment.save();
+    }
+    comment.likes.push(currentUserId);
+    await comment.save();
+    return { statusCode: 200, Status: "Like added to comment" };
+  } else if (comment.likes.includes(currentUserId)) {
+    comment.likes.pop(currentUserId);
+    await comment.save();
+    return { statusCode: 200, Status: "Like removed from comment" };
+  }
+};
+
+//Toggling Dislike
+const toggleCommentDislike = async (commentId, currentUserId) => {
+  const comment = await getCommentById(commentId);
+  if (!comment) {
+    const error = new notFoundError("Comment not found");
+    return error;
+  }
+  if (!comment.dislikes.includes(currentUserId)) {
+    if (comment.likes.includes(currentUserId)) {
+      comment.likes.pop();
+      await comment.save();
+    }
+    comment.dislikes.push(currentUserId);
+    await comment.save();
+    return { statusCode: 200, Status: "Dislike added to comment" };
+  } else if (comment.dislikes.includes(currentUserId)) {
+    comment.dislikes.pop(currentUserId);
+    await comment.save();
+    return { statusCode: 200, Status: "Dislike removed to comment" };
   }
 };
 module.exports = {
@@ -93,4 +149,6 @@ module.exports = {
   updateTheComment,
   getCommentById,
   deleteTheComment,
+  toggleCommentLike,
+  toggleCommentDislike,
 };

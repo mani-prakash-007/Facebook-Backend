@@ -1,36 +1,33 @@
 //Importing Services and Validations
-const {
-  validateComment,
-  validateCommentId,
-} = require("../validations/commentValidations");
-const { validatePostId } = require("../validations/postValidations");
 const { findPostByPostId } = require("../services/postServices");
 const {
   createTheComment,
   getCommentsByPostId,
   updateTheComment,
-  getCommentById,
   deleteTheComment,
+  toggleCommentLike,
+  toggleCommentDislike,
 } = require("../services/commentServices");
+
+const { notFoundError } = require("../customErrors/customErrorClass");
 
 //Getting All Comments
 const getComment = async (req, res) => {
   try {
-    //Validating postid
+    console.log("\n Controller (getComment) - Executing");
+    //Variables
     const postId = req.params.id;
-    const postIdValidation = await validatePostId(postId);
-    if (postIdValidation) {
-      return res
-        .status(400)
-        .json({ Error: postIdValidation.details[0].message });
-    }
-    //Fetching Post by id and Returning the all comments of the post
+
+    //Services
+    //Services - 1
     const post = await findPostByPostId(postId);
     if (!post) {
-      return res.status(404).json({ Error: "Post not Found" });
+      const error = new notFoundError("Post not Found");
+      return res.status(error.statusCode).json({ Details: error });
     }
+    //Services - 2
     const gettingComments = await getCommentsByPostId(postId);
-    res.status(gettingComments.Statuscode).json(gettingComments);
+    res.status(gettingComments.statusCode).json(gettingComments);
   } catch (error) {
     console.error("Error on fetching comments \n", error);
     res.status(500).json({ Error: "Server Error" });
@@ -40,30 +37,19 @@ const getComment = async (req, res) => {
 //Creating Comment
 const createComment = async (req, res) => {
   try {
-    // Validating Comment
+    console.log("\n Controller (createComment) - Executing");
+    //Variables
     const { comment } = req.body;
     const currentUserId = req.user.id;
     const postId = req.params.id;
-    const commentValidation = await validateComment(comment);
-    if (commentValidation) {
-      return res
-        .status(400)
-        .json({ Error: commentValidation.details[0].message });
-    }
-    //Validating PostId
-    const postIdValidation = await validatePostId(postId);
-    if (postIdValidation) {
-      return res
-        .status(400)
-        .json({ Error: postIdValidation.details[0].message });
-    }
-    //creating comment for the post
+
+    //Services
     const comentingProcess = await createTheComment(
       comment,
       postId,
       currentUserId
     );
-    res.status(comentingProcess.Statuscode).json({ comentingProcess });
+    res.status(comentingProcess.statusCode).json({ comentingProcess });
   } catch (error) {
     console.error("Error on creating comment \n", error);
     res.status(500).json({ Error: "Server Error" });
@@ -73,30 +59,19 @@ const createComment = async (req, res) => {
 //Update Comment
 const updateComment = async (req, res) => {
   try {
-    //Validating Comment
+    console.log("\n Controller (updateComment) - Executing");
+    //Variables
     const { comment } = req.body;
     const currentUserId = req.user.id;
-    const commentValidation = await validateComment(comment);
-    if (commentValidation) {
-      return res
-        .status(400)
-        .json({ Error: commentValidation.details[0].message });
-    }
-    //Validating Comment id..
     const commentId = req.params.id;
-    const commentIdValidation = await validateCommentId(commentId);
-    if (commentIdValidation) {
-      return res
-        .status(400)
-        .json({ Error: commentIdValidation.details[0].message });
-    }
-    // fetching comment by id
+
+    //Services
     const updatingComment = await updateTheComment(
       commentId,
       currentUserId,
       comment
     );
-    res.status(updatingComment.Statuscode).json({ updatingComment });
+    res.status(updatingComment.statusCode).json({ updatingComment });
   } catch (error) {
     console.error("Error on updating Comment \n", error);
     return res.status(500).json({ Error: "Internal Server Error" });
@@ -106,18 +81,14 @@ const updateComment = async (req, res) => {
 //Delete comment
 const deleteComment = async (req, res) => {
   try {
-    //Validating Comment id..
+    console.log("\n Controller (deleteComment) - Executing");
+    //Variables
     const commentId = req.params.id;
     const currentUserId = req.user.id;
-    const commentIdValidation = await validateCommentId(commentId);
-    if (commentIdValidation) {
-      return res
-        .status(400)
-        .json({ Error: commentIdValidation.details[0].message });
-    }
-    //Deleting Comment
+
+    //Services
     const deletingProcess = await deleteTheComment(commentId, currentUserId);
-    res.status(deletingProcess.StatusCode).json({ deletingProcess });
+    res.status(deletingProcess.statusCode).json({ deletingProcess });
   } catch (error) {
     console.error("Error on Deleting Comment \n", error);
     res.status(500).json({ Error: "Internal Server Error" });
@@ -127,35 +98,13 @@ const deleteComment = async (req, res) => {
 //Toggling Like to Comment...
 const addLike = async (req, res) => {
   try {
-    //Checking Comment id..
+    console.log("\n Controller (addlike) - Executing");
+    //Variables
     const commentId = req.params.id;
-    const commentIdValidation = await validateCommentId(commentId);
-    if (commentIdValidation) {
-      return res
-        .status(400)
-        .json({ Error: commentIdValidation.details[0].message });
-    }
-    //fetching comment
-    const comment = await getCommentById(commentId);
     const currentUserId = req.user.id;
-    //Checking the comment exist
-    if (!comment) {
-      return res.status(404).json({ Error: "Comment not found" });
-    }
-    //Toggling like for the comment
-    if (!comment.likes.includes(currentUserId)) {
-      if (comment.dislikes.includes(currentUserId)) {
-        comment.dislikes.pop();
-        await comment.save();
-      }
-      comment.likes.push(currentUserId);
-      await comment.save();
-      res.status(200).json({ Status: "Like added to comment" });
-    } else if (comment.likes.includes(currentUserId)) {
-      comment.likes.pop(currentUserId);
-      await comment.save();
-      res.status(200).json({ Status: "Like removed from comment" });
-    }
+    //Services
+    const likeprocess = await toggleCommentLike(commentId, currentUserId);
+    res.status(likeprocess.statusCode).json({ Details: likeprocess });
   } catch (error) {
     console.error("Error on Toggling Like \n", error);
     res.status(500).json({ Error: "Internal Server Error" });
@@ -165,35 +114,14 @@ const addLike = async (req, res) => {
 //Toggling Dislike to Comment...
 const addDislike = async (req, res) => {
   try {
-    //Checking Comment id..
+    console.log("\n Controller (addDislike) - Executing");
+    //Variables
     const commentId = req.params.id;
-    const commentIdValidation = await validateCommentId(commentId);
-    if (commentIdValidation) {
-      return res
-        .status(400)
-        .json({ Error: commentIdValidation.details[0].message });
-    }
-    //fetching comment
-    const comment = await getCommentById(commentId);
     const currentUserId = req.user.id;
-    //Checking the comment exist
-    if (!comment) {
-      return res.status(404).json({ Error: "Comment not found" });
-    }
-    //toggling dislikes to comment
-    if (!comment.dislikes.includes(currentUserId)) {
-      if (comment.likes.includes(currentUserId)) {
-        comment.likes.pop();
-        await comment.save();
-      }
-      comment.dislikes.push(currentUserId);
-      await comment.save();
-      res.status(200).json({ Status: "Dislike added to comment" });
-    } else if (comment.dislikes.includes(currentUserId)) {
-      comment.dislikes.pop(currentUserId);
-      await comment.save();
-      res.status(200).json({ Status: "Dislike removed from comment" });
-    }
+
+    //Services
+    const dislikeProcess = await toggleCommentDislike(commentId, currentUserId);
+    res.status(dislikeProcess.statusCode).json({ Details: dislikeProcess });
   } catch (error) {
     console.error("Error on Toggling Dislike \n", error);
     return res.status(500).json({ Error: "Internal Server Error" });

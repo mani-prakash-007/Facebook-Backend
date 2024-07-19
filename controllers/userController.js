@@ -4,34 +4,23 @@ const {
   createNewUser,
   checkCredentials,
 } = require("../services/userServices");
-const {
-  validateRegisterFields,
-  validateLoginFields,
-} = require("../validations/userValidations");
 
 //Controllers
 //Register User - Controller
 const registerUser = async (req, res) => {
   try {
-    //Checking req.body
+    //Variable
     const { fname, lname, email, password } = req.body;
-    const validation = await validateRegisterFields({
-      fname,
-      lname,
-      email,
-      password,
-    });
-    if (validation) {
-      return res.status(400).json({ Error: validation.details[0].message });
-    }
-    //Checking the Email is Existing
+
+    //Services
+    //Service - 1
     const ExistUser = await checkUserExist(email);
     if (ExistUser) {
       return res
         .status(409)
         .json({ Error: "Email already Exist. Please Login..." });
     }
-    //Creating user
+    //Service - 2
     const user = await createNewUser(fname, lname, email, password);
     res
       .status(200)
@@ -45,15 +34,12 @@ const registerUser = async (req, res) => {
 //Login user - Controller
 const loginUser = async (req, res) => {
   try {
-    //Checking req.body
+    //Variables
     const { email, password } = req.body;
-    const validation = await validateLoginFields({ email, password });
-    if (validation) {
-      return res.status(400).json({ Error: validation.details[0].message });
-    }
-    //Checking the Login Credentials..
+
+    //Services
     const user = await checkCredentials(email, password);
-    res.status(user.code).json({ Status: user });
+    res.status(user.statusCode).json({ Details: user });
   } catch (error) {
     console.error("Error on logging in \n", error);
     return res.status(500).json({ Error: "Server Error" });

@@ -1,31 +1,27 @@
 //Importing Services and Validations
 const {
-  validateFeed,
-  validatePostId,
-} = require("../validations/postValidations");
-
-const {
   createNewPost,
   updateThePost,
   deleteThePost,
   findPostByUserId,
   findAllPost,
   findPostByPostId,
+  toggleLike,
+  toggleDislike,
 } = require("../services/postServices");
+
+const { notFoundError } = require("../customErrors/customErrorClass");
 
 //After Authorization --> return type = req.user (id , Fname , lname , email)
 //Creating Post - controller
 const createPost = async (req, res) => {
   try {
-    //checking req.body
+    console.log("Controller (createPost) - Executing");
+    //Variables
     const { feed } = req.body;
     const currUserId = req.user.id;
-    //Validating Feed
-    const feedValidation = await validateFeed(feed);
-    if (feedValidation) {
-      return res.status(400).json({ Error: feedValidation.details[0].message });
-    }
-    //   creating New Post
+
+    //Services
     const post = await createNewPost(feed, currUserId);
     res.status(200).json({ Status: "Post Created", Post_Details: post });
   } catch (error) {
@@ -36,26 +32,15 @@ const createPost = async (req, res) => {
 //Update Post - Controller
 const updatePost = async (req, res) => {
   try {
-    //checking req.body
+    console.log("Controller (UpdatePost) - Executing");
+    //Variables
     const { feed } = req.body;
-    //Validating Feed...
-    const feedValidation = await validateFeed(feed);
-    if (feedValidation) {
-      return res.status(400).json({ Error: feedValidation.details[0].message });
-    }
-    //Validating PostId
     const postId = req.params.id;
-    const postIdValidation = await validatePostId(postId);
-    if (postIdValidation) {
-      return res
-        .status(400)
-        .json({ Error: postIdValidation.details[0].message });
-    }
-    //Current user id
     const currentUserId = req.user.id;
-    //Updating Post...
+
+    //Services
     const updationProcess = await updateThePost(postId, currentUserId, feed);
-    res.status(updationProcess.statuscode).json({ updationProcess });
+    res.status(updationProcess.statusCode).json({ updationProcess });
   } catch (error) {
     console.error("Error on Updating Post \n", error);
     return res.status(500).json({ Error: "Internal Server Error" });
@@ -64,18 +49,14 @@ const updatePost = async (req, res) => {
 //delete post - controller
 const deletePost = async (req, res) => {
   try {
-    //Validating PostId
+    console.log("Controller (deletePost) - Executing");
+    //Variables
     const postId = req.params.id;
-    const postIdValidation = await validatePostId(postId);
-    if (postIdValidation) {
-      return res
-        .status(400)
-        .json({ Error: postIdValidation.details[0].message });
-    }
     const currentUserId = req.user.id;
-    //Deleting the post
+
+    //Services
     const deletionProcess = await deleteThePost(postId, currentUserId);
-    res.status(deletionProcess.statuscode).json({ deletionProcess });
+    res.status(deletionProcess.statusCode).json({ Details: deletionProcess });
   } catch (error) {
     console.log("Error on Deleting post \n", error);
     return res.status(500).json({ Error: "Internal Server Error" });
@@ -84,6 +65,7 @@ const deletePost = async (req, res) => {
 //Get All post in Application
 const getAllPost = async (req, res) => {
   try {
+    //services
     const all_post = await findAllPost();
     return res.status(200).json({ All_Post: all_post });
   } catch (error) {
@@ -94,9 +76,11 @@ const getAllPost = async (req, res) => {
 //Get All Post of Current User  - Controller
 const getMyPost = async (req, res) => {
   try {
+    //Variables
     const currentUserId = req.user.id;
+
+    //Services
     const currentUserPost = await findPostByUserId(currentUserId);
-    // const currentuser_post = await Post.find({ user: req.user.id });
     return res.status(200).json({ My_Post: currentUserPost });
   } catch (error) {
     console.error("Error on getting current user post\n", error);
@@ -106,18 +90,15 @@ const getMyPost = async (req, res) => {
 //Getting a particular post
 const getPost = async (req, res) => {
   try {
-    //Validating PostId
+    console.log("Controller (getPost) - Executing");
+    //Variables
     const postId = req.params.id;
-    const postIdValidation = await validatePostId(postId);
-    if (postIdValidation) {
-      return res
-        .status(400)
-        .json({ Error: postIdValidation.details[0].message });
-    }
-    //fetching post
+
+    //Services
     const post = await findPostByPostId(postId);
     if (!post) {
-      return res.status(404).json({ Error: "Post not Found" });
+      const error = new notFoundError();
+      return res.status(error.statusCode).json({ Details: error });
     }
     res.status(200).json({ Status: "Post Found", Post_Details: post });
   } catch (error) {
@@ -129,32 +110,14 @@ const getPost = async (req, res) => {
 //Adding Like to post
 const addLike = async (req, res) => {
   try {
-    //checking req.params
-    //Validating PostId
+    console.log("Controller (addlike) - Executing");
+    //Variables
     const postId = req.params.id;
-    const postIdValidation = await validatePostId(postId);
-    if (postIdValidation) {
-      return res
-        .status(400)
-        .json({ Error: postIdValidation.details[0].message });
-    }
-    //fetching post by id
-    const post = await findPostByPostId(postId);
     const currentUserId = req.user.id;
-    //Toggling like to post
-    if (!post.likes.includes(currentUserId)) {
-      if (post.dislikes.includes(currentUserId)) {
-        post.dislikes.pop();
-        await post.save();
-      }
-      post.likes.push(currentUserId);
-      await post.save();
-      res.status(200).json({ Status: "Like Added to the post" });
-    } else if (post.likes.includes(currentUserId)) {
-      post.likes.pop(currentUserId);
-      await post.save();
-      res.status(200).json({ Status: "Like Removed from the post" });
-    }
+
+    //Service
+    const likeProcess = await toggleLike(postId, currentUserId);
+    res.status(likeProcess.statusCode).json({ Details: likeProcess });
   } catch (error) {
     console.error("Error on Toggling Like \n", error);
     return res.status(500).json({ Error: "Internal Server Error" });
@@ -163,32 +126,14 @@ const addLike = async (req, res) => {
 //Adding Dislike to post
 const addDislike = async (req, res) => {
   try {
-    //checking req.params
-    //Validating PostId
+    console.log("Controller (addDislike) - Executing");
+    //Variables...
     const postId = req.params.id;
-    const postIdValidation = await validatePostId(postId);
-    if (postIdValidation) {
-      return res
-        .status(400)
-        .json({ Error: postIdValidation.details[0].message });
-    }
-    //fetching post by id
-    const post = await findPostByPostId(postId);
     const currentUserId = req.user.id;
-    //Toggling dislike to post
-    if (!post.dislikes.includes(currentUserId)) {
-      if (post.likes.includes(currentUserId)) {
-        post.likes.pop();
-        await post.save();
-      }
-      post.dislikes.push(currentUserId);
-      await post.save();
-      res.status(200).json({ Message: "Dislike Added to the post" });
-    } else if (post.dislikes.includes(req.user.id)) {
-      post.dislikes.pop(currentUserId);
-      await post.save();
-      res.status(200).json({ Message: "Dislike Removed from post" });
-    }
+
+    //Services
+    const dislikeProcess = await toggleDislike(postId, currentUserId);
+    res.status(dislikeProcess.statusCode).json({ Details: dislikeProcess });
   } catch (error) {
     console.error("Error on Toggling Dislike \n", error);
     return res.status(500).json({ Error: "Internal Server Error" });

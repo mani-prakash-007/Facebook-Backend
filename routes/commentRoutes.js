@@ -1,7 +1,7 @@
+//Imports
 const express = require("express");
 const commentRoute = express.Router();
 const { Authorization } = require("../middleware/AuthMidWare");
-
 const {
   getComment,
   createComment,
@@ -10,11 +10,65 @@ const {
   addLike,
   addDislike,
 } = require("../controllers/commentController");
-commentRoute.get("/:id", Authorization, getComment);
-commentRoute.post("/:id", Authorization, createComment);
-commentRoute.put("/:id", Authorization, updateComment);
-commentRoute.delete("/:id", Authorization, deleteComment);
-commentRoute.post("/like/:id", Authorization, addLike); 
-commentRoute.post("/dislike/:id", Authorization, addDislike);
+const {
+  commentSchema,
+  commentIdSchema,
+} = require("../validations/commentValidations");
+const { postIdSchema } = require("../validations/postValidations");
+const {
+  validateFields,
+  validateParams,
+} = require("../middleware/validateFields");
+
+//Routes
+//Getting Comment
+commentRoute.get(
+  "/:id",
+  Authorization,
+  validateParams(postIdSchema),
+  getComment
+);
+
+//Creating Comment
+commentRoute.post(
+  "/:id",
+  Authorization,
+  validateParams(postIdSchema),
+  validateFields(commentSchema),
+  createComment
+);
+
+//Updating Comment
+commentRoute.put(
+  "/:id",
+  Authorization,
+  validateParams(commentIdSchema),
+  validateFields(commentSchema),
+  updateComment
+);
+
+//Deleting Comment
+commentRoute.delete(
+  "/:id",
+  Authorization,
+  validateParams(commentIdSchema),
+  deleteComment
+);
+
+//Toggling like to comment
+commentRoute.post(
+  "/like/:id",
+  Authorization,
+  validateParams(commentIdSchema),
+  addLike
+);
+
+//Toggling dislike to comment
+commentRoute.post(
+  "/dislike/:id",
+  Authorization,
+  validateParams(commentIdSchema),
+  addDislike
+);
 
 module.exports = commentRoute;

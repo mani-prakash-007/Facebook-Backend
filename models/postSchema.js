@@ -1,4 +1,4 @@
-//Post Schema...
+//Post Schema
 const mongoose = require("mongoose");
 
 const postSchema = mongoose.Schema({

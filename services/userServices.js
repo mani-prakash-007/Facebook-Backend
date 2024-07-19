@@ -1,7 +1,14 @@
+//Imports
 const User = require("../models/userSchema");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const {
+  notFoundError,
+  incorrectPasswordError,
+} = require("../customErrors/customErrorClass");
 
+
+//Services
 //Checking User already exist in Database
 const checkUserExist = async (email) => {
   const exist = await User.findOne({ email });
@@ -9,6 +16,7 @@ const checkUserExist = async (email) => {
     return exist;
   }
 };
+
 //Creating New user
 const createNewUser = async (fname, lname, email, password) => {
   // Adding Salt to password and Hashing the password
@@ -23,28 +31,29 @@ const createNewUser = async (fname, lname, email, password) => {
   });
   return registeredUserData;
 };
+
 //Find User by email
 const checkCredentials = async (email, password) => {
   const user = await User.findOne({ email });
   if (!user) {
-    return {
-      code: 404,
-      Error: "Login Failed. Check Username / Password",
-    };
+    const error = new notFoundError("Email not found");
+    console.log(error);
+    return error;
   }
   if (user.email === email && (await bcrypt.compare(password, user.password))) {
     return {
-      code: 200,
+      statusCode: 200,
       status: "Login Success",
       token: `${GenerateToken(user._id)}`,
     };
   } else {
-    return {
-      code: 404,
-      Error: "Login Failed . Check Username / Password",
-    };
+    const error = new incorrectPasswordError(
+      "Incorrect password . Check password"
+    );
+    return error;
   }
 };
+
 //Generating JsonWebToken
 const GenerateToken = (id) => {
   return jwt.sign({ id }, process.env.SECRET_KEY, { expiresIn: "5h" });
