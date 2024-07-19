@@ -4,8 +4,25 @@ const mongoose = require("mongoose");
 const app = express();
 const PORT = process.env.PORT || 3030;
 const swaggerUi = require("swagger-ui-express");
-const swaggerDocument = require("./swagger.json");
+const swaggerJsdoc = require("swagger-jsdoc");
 const { globalErrorHandler } = require("./middleware/errorHandler");
+
+//Defining options for generating the Swagger documentation
+const options = {
+  definition: {
+    openapi: "3.0.0",
+    info: {
+      title: "Social Media NodeJS Application",
+      version: "1.0.0",
+      description:
+        "This application constains basic features such as Singin , Signup , CRUD on Post , CRUD on comment , Add Like and Dislike for Posts and Comments",
+    },
+  },
+  apis: ["./routes/*.js"], // Path to the files containing JSDoc comments for your API routes
+};
+// Generating the Swagger specification using the defined options
+const specs = swaggerJsdoc(options);
+
 require("dotenv").config();
 //Parsing Req.Body as Json and url enocded form
 app.use(express.json());
@@ -24,13 +41,7 @@ conn.once("open", () => {
 const userRoutes = require("./routes/userRoutes");
 const postRoutes = require("./routes/postRoutes");
 const commentRoutes = require("./routes/commentRoutes");
-app.use(
-  "/api-docs",
-  swaggerUi.serve,
-  swaggerUi.setup(swaggerDocument, {
-    explorer: true,
-  })
-);
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
 app.use("/api/user", userRoutes);
 app.use("/api/post", postRoutes);
 app.use("/api/post/comment", commentRoutes);
