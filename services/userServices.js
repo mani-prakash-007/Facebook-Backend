@@ -1,6 +1,6 @@
 //Imports
 const User = require("../models/userSchema");
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const {
   NotFoundError,
