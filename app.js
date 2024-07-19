@@ -3,7 +3,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const app = express();
 require("dotenv").config();
-// const PORT = process.env.PORT || 3030;
+const PORT = process.env.PORT || 3030;
 
 const { globalErrorHandler } = require("./middleware/errorHandler");
 //Parsing Req.Body as Json and url enocded form
@@ -33,6 +33,6 @@ app.get("/", (req, res) => {
   res.status(200).json({ Message: "Main Route" });
 });
 
-app.listen(5000, () => {
-  console.log(`Server Running on Port : 5000`);
+app.listen(PORT, () => {
+  console.log(`Server Running on Port : ${PORT}`);
 });
