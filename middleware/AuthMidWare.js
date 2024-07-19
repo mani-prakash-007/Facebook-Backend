@@ -20,7 +20,6 @@ const Authorization = catchError(async (req, res, next) => {
   if (!token) {
     throw new NotFoundError("Token not Found in Header");
   }
-  console.log("Before token validation");
   jwt.verify(token, process.env.SECRET_KEY, async (error, decoded) => {
     if (error) {
       return next(

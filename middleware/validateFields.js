@@ -2,9 +2,7 @@
 
 //Validating Req.Body
 const validateFields = (schema) => (req, res, next) => {
-  console.log(req.body);
   const { error, value } = schema.validate(req.body);
-  console.log("\nValidateFields- executing");
 
   if (error) {
     return res.status(400).json({ error: error.details[0].message });

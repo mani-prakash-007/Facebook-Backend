@@ -77,7 +77,6 @@ const deleteTheComment = async (commentId, currentUserId) => {
       currentUserId === commentData.user.toString() ||
       currentUserId === postData.user.toString()
     ) {
-      console.log("Iner if condition");
       //Removing CommentUserId in the Post
       if (postData.comments.includes(commentData.user)) {
         postData.comments.pop(commentData.user);
