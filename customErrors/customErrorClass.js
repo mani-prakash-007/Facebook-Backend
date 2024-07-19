@@ -8,19 +8,19 @@ class ApplicationError extends Error {
   }
 }
 
-class notFoundError extends ApplicationError {
+class NotFoundError extends ApplicationError {
   constructor(message) {
     super(message || "Resource not found", 404);
   }
 }
 
-class ownerShipError extends ApplicationError {
+class OwnerShipError extends ApplicationError {
   constructor(message) {
     super(message || "Ownership not belongs to currentUser", 403);
   }
 }
 
-class incorrectPasswordError extends ApplicationError {
+class IncorrectPasswordError extends ApplicationError {
   constructor(message) {
     super(message || "Incorrect Password", 401);
   }
@@ -28,7 +28,7 @@ class incorrectPasswordError extends ApplicationError {
 
 module.exports = {
   ApplicationError,
-  notFoundError,
-  ownerShipError,
-  incorrectPasswordError,
+  NotFoundError,
+  OwnerShipError,
+  IncorrectPasswordError,
 };

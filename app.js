@@ -2,6 +2,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const app = express();
+
 const { globalErrorHandler} = require("./middleware/errorHandler")
 //Parsing Req.Body as Json and url enocded form
 app.use(express.json());

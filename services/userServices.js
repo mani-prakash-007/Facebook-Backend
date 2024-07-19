@@ -3,8 +3,8 @@ const User = require("../models/userSchema");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const {
-  notFoundError,
-  incorrectPasswordError,
+  NotFoundError,
+  IncorrectPasswordError,
 } = require("../customErrors/customErrorClass");
 
 //Services
@@ -35,7 +35,7 @@ const createNewUser = async (fname, lname, email, password) => {
 const checkCredentials = async (email, password) => {
   const user = await User.findOne({ email });
   if (!user) {
-    throw new notFoundError("Email not found");
+    throw new NotFoundError("Email not found");
   }
   if (user.email === email && (await bcrypt.compare(password, user.password))) {
     return {
@@ -44,7 +44,7 @@ const checkCredentials = async (email, password) => {
       token: `${GenerateToken(user._id)}`,
     };
   } else {
-    throw new incorrectPasswordError("Incorrect password . Check password");
+    throw new IncorrectPasswordError("Incorrect password . Check password");
   }
 };
 
