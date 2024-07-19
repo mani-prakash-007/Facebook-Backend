@@ -26,9 +26,23 @@ class IncorrectPasswordError extends ApplicationError {
   }
 }
 
+class EmailAlreadyExistsError extends ApplicationError {
+  constructor(message) {
+    super(message || "Email Already Exist", 409);
+  }
+}
+
+class UnauthorizedError extends ApplicationError {
+  constructor(message) {
+    super(message || "Unauthorized access", 401);
+  }
+}
+
 module.exports = {
   ApplicationError,
   NotFoundError,
   OwnerShipError,
   IncorrectPasswordError,
+  EmailAlreadyExistsError,
+  UnauthorizedError,
 };

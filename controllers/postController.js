@@ -9,7 +9,7 @@ const {
   toggleLike,
   toggleDislike,
 } = require("../services/postServices");
-const { notFoundError } = require("../customErrors/customErrorClass");
+const { NotFoundError } = require("../customErrors/customErrorClass");
 const { catchError } = require("../utils/catchAsync");
 
 //Controller
@@ -72,7 +72,7 @@ const getPost = catchError(async (req, res) => {
   //Services
   const post = await findPostByPostId(postId);
   if (!post) {
-    const error = new notFoundError();
+    const error = new NotFoundError();
     return res.status(error.statusCode).json({ Details: error });
   }
   res.status(200).json({ Status: "Post Found", Post_Details: post });

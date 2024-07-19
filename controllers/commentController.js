@@ -8,13 +8,12 @@ const {
   toggleCommentLike,
   toggleCommentDislike,
 } = require("../services/commentServices");
-const { notFoundError } = require("../customErrors/customErrorClass");
+const { NotFoundError } = require("../customErrors/customErrorClass");
 const { catchError } = require("../utils/catchAsync");
 ("");
 
 //Getting All Comments
 const getComment = catchError(async (req, res) => {
-  console.log("\n Controller (getComment) - Executing");
   //Variables
   const postId = req.params.id;
 
@@ -22,7 +21,7 @@ const getComment = catchError(async (req, res) => {
   //Services - 1
   const post = await findPostByPostId(postId);
   if (!post) {
-    const error = new notFoundError("Post not Found");
+    const error = new NotFoundError("Post not Found");
     return res.status(error.statusCode).json({ Details: error });
   }
   //Services - 2
@@ -32,7 +31,6 @@ const getComment = catchError(async (req, res) => {
 
 //Creating Comment
 const createComment = catchError(async (req, res) => {
-  console.log("\n Controller (createComment) - Executing");
   //Variables
   const { comment } = req.body;
   const currentUserId = req.user.id;
@@ -49,7 +47,6 @@ const createComment = catchError(async (req, res) => {
 
 //Update Comment
 const updateComment = catchError(async (req, res) => {
-  console.log("\n Controller (updateComment) - Executing");
   //Variables
   const { comment } = req.body;
   const currentUserId = req.user.id;
@@ -66,7 +63,6 @@ const updateComment = catchError(async (req, res) => {
 
 //Delete comment
 const deleteComment = catchError(async (req, res) => {
-  console.log("\n Controller (deleteComment) - Executing");
   //Variables
   const commentId = req.params.id;
   const currentUserId = req.user.id;
@@ -78,7 +74,6 @@ const deleteComment = catchError(async (req, res) => {
 
 //Toggling Like to Comment...
 const addLike = catchError(async (req, res) => {
-  console.log("\n Controller (addlike) - Executing");
   //Variables
   const commentId = req.params.id;
   const currentUserId = req.user.id;
@@ -89,7 +84,6 @@ const addLike = catchError(async (req, res) => {
 
 //Toggling Dislike to Comment...
 const addDislike = catchError(async (req, res) => {
-  console.log("\n Controller (addDislike) - Executing");
   //Variables
   const commentId = req.params.id;
   const currentUserId = req.user.id;

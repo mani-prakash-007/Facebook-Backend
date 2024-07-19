@@ -2,13 +2,14 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const app = express();
+require("dotenv").config();
+// const PORT = process.env.PORT || 3030;
 
-const { globalErrorHandler} = require("./middleware/errorHandler")
+const { globalErrorHandler } = require("./middleware/errorHandler");
 //Parsing Req.Body as Json and url enocded form
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-require("dotenv").config();
 const uri = process.env.MONGODB_CONN_URI;
 //Connecting DB
 mongoose.connect(uri);
@@ -25,7 +26,7 @@ const commentRoutes = require("./routes/commentRoutes");
 app.use("/api/user", userRoutes);
 app.use("/api/post", postRoutes);
 app.use("/api/post/comment", commentRoutes);
-app.use(globalErrorHandler)
+app.use(globalErrorHandler);
 
 //Main Route
 app.get("/", (req, res) => {
@@ -33,5 +34,5 @@ app.get("/", (req, res) => {
 });
 
 app.listen(5000, () => {
-  console.log("Server Running on Port : 5000");
+  console.log(`Server Running on Port : 5000`);
 });

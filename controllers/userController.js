@@ -5,6 +5,7 @@ const {
   checkCredentials,
 } = require("../services/userServices");
 const { catchError } = require("../utils/catchAsync");
+const { EmailAlreadyExistsError } = require("../customErrors/customErrorClass");
 
 //Controllers
 //Register User - Controller
@@ -16,13 +17,11 @@ const registerUser = catchError(async (req, res) => {
   //Service - 1
   const ExistUser = await checkUserExist(email);
   if (ExistUser) {
-    return res
-      .status(409)
-      .json({ Error: "Email already Exist. Please Login..." });
+    throw new EmailAlreadyExistsError("Email already Exist. Please Login");
   }
   //Service - 2
   const user = await createNewUser(fname, lname, email, password);
-  res.status(200).json({ Status: "Register Successful...!!", UserData: user });
+  res.status(200).json({ Status: "Register Successful", UserData: user });
 });
 
 //Login user - Controller
@@ -36,13 +35,8 @@ const loginUser = catchError(async (req, res) => {
 });
 
 //Getting Current User  - Controller
-const getCurrUser = (req, res) => {
-  try {
-    return res.status(200).json({ Current_User: req.user });
-  } catch (error) {
-    console.error("Error on fetching current user \n", error);
-    return res.status(500).json({ Error: "Server Error." });
-  }
-};
+const getCurrUser = catchError((req, res) => {
+  return res.status(200).json({ Current_User: req.user });
+});
 
 module.exports = { registerUser, loginUser, getCurrUser };
