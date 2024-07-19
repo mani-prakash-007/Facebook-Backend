@@ -18,8 +18,7 @@ const createNewPost = async (feed, userId) => {
 const updateThePost = async (postId, userId, feed) => {
   const post = await findPostByPostId(postId);
   if (!post) {
-    const error = new notFoundError("Post not Found");
-    return error;
+    throw new notFoundError("Post not Found");
   }
   if (userId === post.user.toString()) {
     const updatedPost = await Post.findByIdAndUpdate(
@@ -35,7 +34,7 @@ const updateThePost = async (postId, userId, feed) => {
       Updated_Post_Details: updatedPost,
     };
   } else {
-    const error = new ownerShipError(" Post not belongs to Current User");
+    throw new ownerShipError(" Post not belongs to Current User");
     return error;
   }
 };
@@ -44,8 +43,7 @@ const updateThePost = async (postId, userId, feed) => {
 const deleteThePost = async (postId, userId) => {
   const post = await findPostByPostId(postId);
   if (!post) {
-    const error = new notFoundError("Post not Found");
-    return error;
+    throw new notFoundError("Post not Found");
   }
   if (userId === post.user.toString()) {
     const commentIds = post.comments;
@@ -55,8 +53,7 @@ const deleteThePost = async (postId, userId) => {
     await Post.findByIdAndDelete(postId);
     return { statusCode: 200, Status: "Post Deleted" };
   } else {
-    const error = new ownerShipError(" Post not belongs to Current User");
-    return error;
+    throw new ownerShipError(" Post not belongs to Current User");
   }
 };
 
@@ -79,7 +76,7 @@ const findPostByPostId = async (postId) => {
 const toggleLike = async (postId, currentUserId) => {
   const post = await findPostByPostId(postId);
   if (!post) {
-    const error = new notFoundError("Post not found");
+    throw new notFoundError("Post not found");
     return error;
   }
   if (!post.likes.includes(currentUserId)) {
@@ -101,8 +98,7 @@ const toggleLike = async (postId, currentUserId) => {
 const toggleDislike = async (postId, currentUserId) => {
   const post = await findPostByPostId(postId);
   if (!post) {
-    const error = new notFoundError("Post not Found");
-    return error;
+    throw new notFoundError("Post not Found");
   }
   if (!post.dislikes.includes(currentUserId)) {
     if (post.likes.includes(currentUserId)) {

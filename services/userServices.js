@@ -7,7 +7,6 @@ const {
   incorrectPasswordError,
 } = require("../customErrors/customErrorClass");
 
-
 //Services
 //Checking User already exist in Database
 const checkUserExist = async (email) => {
@@ -36,9 +35,7 @@ const createNewUser = async (fname, lname, email, password) => {
 const checkCredentials = async (email, password) => {
   const user = await User.findOne({ email });
   if (!user) {
-    const error = new notFoundError("Email not found");
-    console.log(error);
-    return error;
+    throw new notFoundError("Email not found");
   }
   if (user.email === email && (await bcrypt.compare(password, user.password))) {
     return {
@@ -47,10 +44,7 @@ const checkCredentials = async (email, password) => {
       token: `${GenerateToken(user._id)}`,
     };
   } else {
-    const error = new incorrectPasswordError(
-      "Incorrect password . Check password"
-    );
-    return error;
+    throw new incorrectPasswordError("Incorrect password . Check password");
   }
 };
 

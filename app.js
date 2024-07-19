@@ -2,7 +2,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const app = express();
-
+const { globalErrorHandler} = require("./middleware/errorHandler")
 //Parsing Req.Body as Json and url enocded form
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -24,6 +24,7 @@ const commentRoutes = require("./routes/commentRoutes");
 app.use("/api/user", userRoutes);
 app.use("/api/post", postRoutes);
 app.use("/api/post/comment", commentRoutes);
+app.use(globalErrorHandler)
 
 //Main Route
 app.get("/", (req, res) => {
