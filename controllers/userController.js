@@ -14,14 +14,8 @@ const registerUser = catchError(async (req, res) => {
   const { fname, lname, email, password } = req.body;
 
   //Services
-  //Service - 1
-  const ExistUser = await checkUserExist(email);
-  if (ExistUser) {
-    throw new EmailAlreadyExistsError("Email already Exist. Please Login");
-  }
-  //Service - 2
-  const user = await createNewUser(fname, lname, email, password);
-  res.status(200).json({ Status: "Register Successful", UserData: user });
+  const newUser = await createNewUser(fname, lname, email, password);
+  res.status(200).json({ Status: "Register Successful", UserData: newUser });
 });
 
 //Login user - Controller

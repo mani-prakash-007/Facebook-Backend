@@ -5,6 +5,7 @@ const jwt = require("jsonwebtoken");
 const {
   NotFoundError,
   IncorrectPasswordError,
+  EmailAlreadyExistsError,
 } = require("../customErrors/customErrorClass");
 
 //Services
@@ -18,6 +19,10 @@ const checkUserExist = async (email) => {
 
 //Creating New user
 const createNewUser = async (fname, lname, email, password) => {
+  const existUser = await checkUserExist(email);
+  if (existUser) {
+    throw new EmailAlreadyExistsError("Email already Exist. Please Login");
+  }
   // Adding Salt to password and Hashing the password
   const salt = await bcrypt.genSalt(10);
   const HashedPassword = await bcrypt.hash(password, salt);
@@ -41,15 +46,13 @@ const checkCredentials = async (email, password) => {
     return {
       statusCode: 200,
       status: "Login Success",
-      token: `${GenerateToken(user._id)}`,
+      token: `${jwt.sign({ id: user._id }, process.env.SECRET_KEY, {
+        expiresIn: "5h",
+      })}`,
     };
   } else {
     throw new IncorrectPasswordError("Incorrect password . Check password");
   }
 };
 
-//Generating JsonWebToken
-const GenerateToken = (id) => {
-  return jwt.sign({ id }, process.env.SECRET_KEY, { expiresIn: "5h" });
-};
 module.exports = { checkUserExist, createNewUser, checkCredentials };

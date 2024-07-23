@@ -2,7 +2,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const app = express();
-const PORT = process.env.PORT || 3030;
+const PORT = process.env.PORT || 5000;
 const swaggerUi = require("swagger-ui-express");
 const swaggerJsdoc = require("swagger-jsdoc");
 const { globalErrorHandler } = require("./middleware/errorHandler");
@@ -11,6 +11,7 @@ const { globalErrorHandler } = require("./middleware/errorHandler");
 const options = {
   definition: {
     openapi: "3.0.0",
+    // explorer: true,
     info: {
       title: "Social Media NodeJS Application",
       version: "1.0.0",

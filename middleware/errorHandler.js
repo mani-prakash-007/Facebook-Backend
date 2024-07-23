@@ -1,6 +1,6 @@
 const globalErrorHandler = (error, req, res, next) => {
   const statusCode = error.statusCode || 500;
-  const name = error.name;
+  const name = error.name ;
   const message = error.message || "Something went wrong";
 
   res
