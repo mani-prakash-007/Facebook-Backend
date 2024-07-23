@@ -5,6 +5,8 @@ const {
   NotFoundError,
   OwnerShipError,
 } = require("../customErrors/customErrorClass");
+//Services
+//Create Post
 const createNewPost = async (feed, userId) => {
   const post = await Post.create({
     user: userId,
@@ -13,10 +15,9 @@ const createNewPost = async (feed, userId) => {
   return post;
 };
 
-//Services
 //Update the post...
 const updateThePost = async (postId, userId, feed) => {
-  const post = await findPostByPostId(postId);
+  const post = await Post.findById(postId);
   if (!post) {
     throw new NotFoundError("Post not Found");
   }
@@ -35,13 +36,12 @@ const updateThePost = async (postId, userId, feed) => {
     };
   } else {
     throw new OwnerShipError(" Post not belongs to Current User");
-    return error;
   }
 };
 
 //Delete the post
 const deleteThePost = async (postId, userId) => {
-  const post = await findPostByPostId(postId);
+  const post = await Post.findById(postId);
   if (!post) {
     throw new NotFoundError("Post not Found");
   }
