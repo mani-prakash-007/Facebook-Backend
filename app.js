@@ -50,7 +50,7 @@ app.use(globalErrorHandler);
 
 //Main Route
 app.get("/", (req, res) => {
-  res.status(200).json({ Message: "Main Route" });
+  res.status(200).send(`<h1>Social Media Application </h1>`);
 });
 
 app.listen(PORT, () => {
