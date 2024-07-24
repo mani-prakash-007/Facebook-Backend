@@ -77,7 +77,6 @@ const toggleLike = async (postId, currentUserId) => {
   const post = await findPostByPostId(postId);
   if (!post) {
     throw new NotFoundError("Post not found");
-    return error;
   }
   if (!post.likes.includes(currentUserId)) {
     if (post.dislikes.includes(currentUserId)) {
@@ -98,7 +97,7 @@ const toggleLike = async (postId, currentUserId) => {
 const toggleDislike = async (postId, currentUserId) => {
   const post = await findPostByPostId(postId);
   if (!post) {
-    throw new NotFoundError("Post not Found");
+    throw new NotFoundError("Post not found");
   }
   if (!post.dislikes.includes(currentUserId)) {
     if (post.likes.includes(currentUserId)) {
@@ -107,11 +106,11 @@ const toggleDislike = async (postId, currentUserId) => {
     }
     post.dislikes.push(currentUserId);
     await post.save();
-    return { statusCode: 200, Status: "Disike Added to the post" };
+    return { statusCode: 200, Status: "Dislike Added to the post" };
   } else if (post.dislikes.includes(currentUserId)) {
     post.dislikes.pop(currentUserId);
     await post.save();
-    return { statusCode: 200, Status: "Disike Removed from the post" };
+    return { statusCode: 200, Status: "Dislike Removed from the post" };
   }
 };
 module.exports = {

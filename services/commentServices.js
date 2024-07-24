@@ -1,6 +1,6 @@
 //Imports
 const Comment = require("../models/commentSchema");
-const { findPostByPostId } = require("../services/postServices");
+const Post = require("../models/postSchema");
 const {
   NotFoundError,
   OwnerShipError,
@@ -9,9 +9,9 @@ const {
 //Services
 //Creating Comment
 const createTheComment = async (comment, postId, currentUserId) => {
-  const post = await findPostByPostId(postId);
+  const post = await Post.findById(postId);
   if (!post) {
-    throw NotFoundError("Post not Found");
+    throw new NotFoundError("Post not Found");
   }
   if (!currentUserId) {
     throw new NotFoundError("Current userId not Found");
@@ -44,7 +44,7 @@ const getCommentById = async (commentId) => {
 
 //Updating the Comment
 const updateTheComment = async (commentId, currentUserId, comment) => {
-  const commentData = await getCommentById(commentId);
+  const commentData = await Comment.findById(commentId);
   if (commentData != null) {
     if (currentUserId === commentData.user.toString()) {
       const updatedComment = await Comment.findByIdAndUpdate(
@@ -67,28 +67,27 @@ const updateTheComment = async (commentId, currentUserId, comment) => {
 
 //Deleting Comment
 const deleteTheComment = async (commentId, currentUserId) => {
-  const commentData = await getCommentById(commentId);
+  const commentData = await Comment.findById(commentId);
   if (!commentData) {
     throw new NotFoundError("Comment not Found");
   }
   if (commentData) {
-    const postData = await findPostByPostId(commentData.post);
+    const postData = await Post.findById(commentData.post);
     if (
       currentUserId === commentData.user.toString() ||
       currentUserId === postData.user.toString()
     ) {
       //Removing CommentUserId in the Post
-      if (postData.comments.includes(commentData.user)) {
-        postData.comments.pop(commentData.user);
+      if (postData.comments.includes(commentData.id)) {
+        postData.comments.pop(commentData.id);
         await postData.save();
       }
       //Deleting Comment
       await Comment.findByIdAndDelete(commentId);
       return { statusCode: 200, Status: "Comment Deleted" };
     } else {
-      throw OwnerShipError("Comment not belongs to Current User");
+      throw new OwnerShipError("Comment not belongs to Current User");
     }
-  } else {
   }
 };
 
@@ -96,7 +95,7 @@ const deleteTheComment = async (commentId, currentUserId) => {
 const toggleCommentLike = async (commentId, currentUserId) => {
   const comment = await getCommentById(commentId);
   if (!comment) {
-    throw NotFoundError("Comment not found");
+    throw new NotFoundError("Comment not found");
   }
   if (!comment.likes.includes(currentUserId)) {
     if (comment.dislikes.includes(currentUserId)) {
@@ -117,7 +116,7 @@ const toggleCommentLike = async (commentId, currentUserId) => {
 const toggleCommentDislike = async (commentId, currentUserId) => {
   const comment = await getCommentById(commentId);
   if (!comment) {
-    throw NotFoundError("Comment not found");
+    throw new NotFoundError("Comment not found");
   }
   if (!comment.dislikes.includes(currentUserId)) {
     if (comment.likes.includes(currentUserId)) {
@@ -130,7 +129,7 @@ const toggleCommentDislike = async (commentId, currentUserId) => {
   } else if (comment.dislikes.includes(currentUserId)) {
     comment.dislikes.pop(currentUserId);
     await comment.save();
-    return { statusCode: 200, Status: "Dislike removed to comment" };
+    return { statusCode: 200, Status: "Dislike removed from comment" };
   }
 };
 module.exports = {

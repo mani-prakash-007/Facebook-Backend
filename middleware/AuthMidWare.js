@@ -26,7 +26,18 @@ const Authorization = catchError(async (req, res, next) => {
         new UnauthorizedError("JsonWebTokenError: invalid signature")
       );
     }
-    req.user = await User.findById(decoded.id).select("-password");
+    userDetails = await User.findById(decoded.id);
+    if (!userDetails) {
+      return next(
+        new UnauthorizedError("JsonWebTokenError: invalid signature")
+      );
+    }
+    req.user = {
+      id: userDetails.id,
+      first_name: userDetails.first_name,
+      last_name: userDetails.last_name,
+      email: userDetails.email,
+    };
     next();
   });
 });
