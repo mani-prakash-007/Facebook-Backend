@@ -1,5 +1,5 @@
-const Post = require("../../models/postSchema");
-const Comment = require("../../models/commentSchema");
+const Post = require("../../../models/postSchema");
+const Comment = require("../../../models/commentSchema");
 const {
   createNewPost,
   updateThePost,
@@ -9,15 +9,15 @@ const {
   findPostByPostId,
   toggleLike,
   toggleDislike,
-} = require("../../services/postServices");
+} = require("../../../services/postServices");
 
 const {
   NotFoundError,
   OwnerShipError,
-} = require("../../customErrors/customErrorClass");
+} = require("../../../customErrors/customErrorClass");
 
-jest.mock("../../models/postSchema");
-jest.mock("../../models/commentSchema");
+jest.mock("../../../models/postSchema");
+jest.mock("../../../models/commentSchema");
 
 describe("createNewPost", () => {
   it("should return a post upon creation", async () => {

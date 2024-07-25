@@ -1,7 +1,7 @@
 const {
   validateFields,
   validateParams,
-} = require("../../middleware/validateFields"); // adjust the path
+} = require("../../../middleware/validateFields"); // adjust the path
 const Joi = require("joi");
 
 //Test - Validatefields

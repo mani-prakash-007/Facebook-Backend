@@ -1,5 +1,5 @@
-const Comment = require("../../models/commentSchema");
-const Post = require("../../models/postSchema");
+const Comment = require("../../../models/commentSchema");
+const Post = require("../../../models/postSchema");
 const {
   createTheComment,
   getCommentsByPostId,
@@ -8,16 +8,16 @@ const {
   deleteTheComment,
   toggleCommentLike,
   toggleCommentDislike,
-} = require("../../services/commentServices");
+} = require("../../../services/commentServices");
 
 const {
   NotFoundError,
   OwnerShipError,
-} = require("../../customErrors/customErrorClass");
+} = require("../../../customErrors/customErrorClass");
 
 // mocking the imports
-jest.mock("../../models/commentSchema");
-jest.mock("../../models/postSchema");
+jest.mock("../../../models/commentSchema");
+jest.mock("../../../models/postSchema");
 
 //Test - create the comment
 describe("Create Comment", () => {

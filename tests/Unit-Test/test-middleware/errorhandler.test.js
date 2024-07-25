@@ -1,4 +1,4 @@
-const { globalErrorHandler } = require("../../middleware/errorHandler");
+const { globalErrorHandler } = require("../../../middleware/errorHandler");
 
 describe("Global Error handler ", () => {
   let error, req, res, next;

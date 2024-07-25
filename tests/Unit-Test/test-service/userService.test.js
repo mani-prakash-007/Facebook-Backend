@@ -1,20 +1,20 @@
 //Imports
-const User = require("../../models/userSchema");
+const User = require("../../../models/userSchema");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const {
   NotFoundError,
   IncorrectPasswordError,
   EmailAlreadyExistsError,
-} = require("../../customErrors/customErrorClass");
+} = require("../../../customErrors/customErrorClass");
 const {
   createNewUser,
   checkUserExist,
   checkCredentials,
-} = require("../../services/userServices");
-const userSchema = require("../../models/userSchema");
+} = require("../../../services/userServices");
+const userSchema = require("../../../models/userSchema");
 
-jest.mock("../../models/userSchema");
+jest.mock("../../../models/userSchema");
 jest.mock("bcryptjs");
 jest.mock("jsonwebtoken");
 

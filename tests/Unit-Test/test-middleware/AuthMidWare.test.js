@@ -1,15 +1,15 @@
 const jwt = require("jsonwebtoken");
-const User = require("../../models/userSchema");
+const User = require("../../../models/userSchema");
 
 const {
   NotFoundError,
   UnauthorizedError,
-} = require("../../customErrors/customErrorClass");
-const { catchError } = require("../../utils/catchAsync");
-const { Authorization } = require("../../middleware/AuthMidWare");
+} = require("../../../customErrors/customErrorClass");
+const { catchError } = require("../../../utils/catchAsync");
+const { Authorization } = require("../../../middleware/AuthMidWare");
 
 jest.mock("jsonwebtoken");
-jest.mock("../../models/userSchema");
+jest.mock("../../../models/userSchema");
 
 describe("Authorization Middleware", () => {
   let req, res, next;
