@@ -55,8 +55,10 @@ app.get("/", (req, res) => {
   res.status(200).send(`<h1>Social Media Application </h1>`);
 });
 
- const server = app.listen(PORT, () => {
-  console.log(`Server Running on Port : ${PORT}`);
-});
+if (process.env.NODE_ENV !== "test") {
+  app.listen(PORT, () => {
+    console.log(`Server Running on Port : ${PORT}`);
+  });
+}
 
-module.exports = {app , server}
+module.exports =  app ;
