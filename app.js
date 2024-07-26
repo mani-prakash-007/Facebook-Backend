@@ -30,12 +30,14 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 const uri = process.env.MONGODB_CONN_URI;
-//Connecting DB
-mongoose.connect(uri);
-const conn = mongoose.connection;
-conn.once("open", () => {
-  console.log("DB Connected...");
-});
+// Connecting DB if not in test environment
+if (process.env.NODE_ENV !== "test") {
+  mongoose.connect(uri);
+  const conn = mongoose.connection;
+  conn.once("open", () => {
+    console.log("DB Connected...");
+  });
+}
 
 //Routes
 //Sub route Imports:
@@ -53,6 +55,8 @@ app.get("/", (req, res) => {
   res.status(200).send(`<h1>Social Media Application </h1>`);
 });
 
-app.listen(PORT, () => {
+ const server = app.listen(PORT, () => {
   console.log(`Server Running on Port : ${PORT}`);
 });
+
+module.exports = {app , server}
