@@ -84,18 +84,56 @@ describe("Create Post route", () => {
     expect(response.status).toBe(200);
     expect(response.body).toMatchObject(expectedResponse);
   });
+  //No Bearer token
+  it("should return notFound Error upon no token is passed in the Header.Authorization", async () => {
+    //Test
+    const response = await request(app)
+      .post("/api/post/")
+      .set("Authorization", `Bearer `)
+      .send();
+    //Actual Response
+    const expectedResponse = {
+      StatusCode: 404,
+      ErrorName: "NotFoundError",
+      ErrorMessage: "Token not Found in Header",
+    };
+
+    //Assertions
+    expect(response.status).toBe(404);
+    expect(response.body).toMatchObject(expectedResponse);
+  });
+  //Test - JWT token verification fails
+  it("should return notFound Error upon no token is passed in the Header.Authorization", async () => {
+    //Test
+    const response = await request(app)
+      .post("/api/post/")
+      .set("Authorization", `Bearer ${token}siuf`)
+      .send();
+    //Actual Response
+    const expectedResponse = {
+      StatusCode: 401,
+      ErrorName: "UnauthorizedError",
+      ErrorMessage: "JsonWebTokenError: invalid signature",
+    };
+
+    //Assertions
+    expect(response.status).toBe(401);
+    expect(response.body).toMatchObject(expectedResponse);
+  });
   it("should create a post upon successful Authorization of User", async () => {
+    //Test
     const response = await request(app)
       .post("/api/post/")
       .set("Authorization", `Bearer ${token}`)
       .send({
         feed: "New Post",
       });
+    //Actual Response
     const expectedResponse = {
       Status: "Post Created",
       Post_Details: {
         user: expect.any(String),
-        feed: "Demo Post",
+        feed: "New Post",
         likes: [],
         dislikes: [],
         comments: [],
@@ -105,5 +143,38 @@ describe("Create Post route", () => {
         __v: 0,
       },
     };
+    //Assertions
+    expect(response.status).toBe(200);
+    expect(response.body).toMatchObject(expectedResponse);
+  });
+  //Test - No feed field
+  it("should return required field error upon missing field", async () => {
+    //Test
+    const response = await request(app)
+      .post("/api/post/")
+      .set("Authorization", `Bearer ${token}`)
+      .send();
+    //Actual response
+    const expectedResponse = {
+      error: "Feed is required.",
+    };
+    //Assertions
+    expect(response.status).toBe(400);
+    expect(response.body).toMatchObject(expectedResponse);
+  });
+  //Test - No feed value
+  it("should return required field error upon missing field", async () => {
+    //Test
+    const response = await request(app)
+      .post("/api/post/")
+      .set("Authorization", `Bearer ${token}`)
+      .send({ feed: "" });
+    //Actual response
+    const expectedResponse = {
+      error: '"feed" is not allowed to be empty',
+    };
+    //Assertions
+    expect(response.status).toBe(400);
+    expect(response.body).toMatchObject(expectedResponse);
   });
 });
