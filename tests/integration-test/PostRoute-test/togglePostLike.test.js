@@ -3,7 +3,7 @@ const app = require("../../../app");
 const mongoose = require("mongoose");
 const { generateRandomNumber } = require("../../../randomPortNumGen");
 
-describe("Update Post route", () => {
+describe("Get Current user Post route", () => {
   //DB Connection Setup
 
   //Truncating all datas in the db
@@ -159,7 +159,7 @@ describe("Update Post route", () => {
         _id: expect.any(String),
         createdAt: expect.any(String),
         updatedAt: expect.any(String),
-        __v:  expect.any(Number),
+        __v: expect.any(Number),
       },
     };
     user1PostId = response.body.Post_Details._id;
@@ -200,7 +200,7 @@ describe("Update Post route", () => {
   it("should return notFound Error upon no token is passed in the Header.Authorization", async () => {
     //Test
     const response = await request(app)
-      .put(`/api/post/${user1PostId}`)
+      .post(`/api/post/like/${user1PostId}`)
       .set("Authorization", `Bearer `)
       .send();
     //Actual Response
@@ -218,7 +218,7 @@ describe("Update Post route", () => {
   it("should return JsonWebTokenError upon token verification fails", async () => {
     //Test
     const response = await request(app)
-      .put(`/api/post/${user1PostId}`)
+      .post(`/api/post/like/${user1PostId}`)
       .set("Authorization", `Bearer ${user1Token}siuf`)
       .send();
     //Actual Response
@@ -233,44 +233,16 @@ describe("Update Post route", () => {
     expect(response.body).toMatchObject(expectedResponse);
   });
 
-  //Test - No feed field
-  it("should return required field error upon missing field", async () => {
-    //Test
-    const response = await request(app)
-      .put(`/api/post/${user1PostId}`)
-      .set("Authorization", `Bearer ${user1Token}`)
-      .send();
-    //Actual response
-    const expectedResponse = {
-      error: "Feed is required.",
-    };
-    //Assertions
-    expect(response.status).toBe(400);
-    expect(response.body).toMatchObject(expectedResponse);
-  });
-  //Test - No feed value
-  it("should return required feed Value Error upon no value in feed field", async () => {
-    //Test
-    const response = await request(app)
-      .put(`/api/post/${user1PostId}`)
-      .set("Authorization", `Bearer ${user1Token}`)
-      .send({ feed: "" });
-    //Actual response
-    const expectedResponse = {
-      error: '"feed" is not allowed to be empty',
-    };
-    //Assertions
-    expect(response.status).toBe(400);
-    expect(response.body).toMatchObject(expectedResponse);
-  });
+  //////////////////////////////////////////////////////////////////////////////////////////////////
+
   //Test - Req.params.id Validation
   it("should return Validation field error upon entering post Id", async () => {
     //Test
-    const id = "66a53545d5c556a233239bd";
+    const id = "66a53545d5c556";
     const response = await request(app)
-      .put(`/api/post/${id}`)
+      .post(`/api/post/like/${id}`)
       .set("Authorization", `Bearer ${user1Token}`)
-      .send({ feed: "Update Post" });
+      .send();
     //Actual response
     const expectedResponse = {
       error:
@@ -280,65 +252,54 @@ describe("Update Post route", () => {
     expect(response.status).toBe(400);
     expect(response.body).toMatchObject(expectedResponse);
   });
+
   //Test - Post not Exist
   it("should return NotFoundError error upon entering postId is not exist", async () => {
     //Test
     const id = "669a061576c54cbc43de69df";
     const response = await request(app)
-      .put(`/api/post/${id}`)
+      .post(`/api/post/like/${id}`)
       .set("Authorization", `Bearer ${user1Token}`)
       .send({ feed: "Updated Post" });
     //Actual response
     const expectedResponse = {
       StatusCode: 404,
       ErrorName: "NotFoundError",
-      ErrorMessage: "Post not Found",
+      ErrorMessage: "Post not found",
     };
     //Assertions
     expect(response.status).toBe(404);
     expect(response.body).toMatchObject(expectedResponse);
   });
-  //Test - Post ownership
-  it("should return OwnerShipError upon trying to update others post", async () => {
+  //Test - Return All post
+  it("should return a message with added like upon hitting the toggle like endpoint", async () => {
     //Test
     const response = await request(app)
-      .put(`/api/post/${user2PostId}`)
+      .post(`/api/post/like/${user1PostId}`)
       .set("Authorization", `Bearer ${user1Token}`)
-      .send({ feed: "Updating Post" });
-    //Actual response
+      .send();
+    //Actual Response
     const expectedResponse = {
-      StatusCode: 403,
-      ErrorName: "OwnerShipError",
-      ErrorMessage: " Post not belongs to Current User",
+      Details: {
+        statusCode: 200,
+        Status: "Like Added to the post",
+      },
     };
     //Assertions
-    expect(response.status).toBe(403);
+    expect(response.status).toBe(200);
     expect(response.body).toMatchObject(expectedResponse);
   });
-
-  //Test - Post updateing
-  it("should return a message with updated-post details", async () => {
+  it("should return a message with removed like upon hitting the toggle like endpoint", async () => {
     //Test
     const response = await request(app)
-      .put(`/api/post/${user1PostId}`)
+      .post(`/api/post/like/${user1PostId}`)
       .set("Authorization", `Bearer ${user1Token}`)
-      .send({ feed: "Updated Post" });
-    //Actual response
+      .send();
+    //Actual Response
     const expectedResponse = {
-      updationProcess: {
+      Details: {
         statusCode: 200,
-        Status: "Post Updated",
-        Updated_Post_Details: {
-          _id: user1PostId,
-          user: user1Id,
-          feed: "Updated Post",
-          likes: [],
-          dislikes: [],
-          comments: [],
-          createdAt: expect.any(String),
-          updatedAt: expect.any(String),
-          __v:  expect.any(Number),
-        },
+        Status: "Like Removed from the post",
       },
     };
     //Assertions

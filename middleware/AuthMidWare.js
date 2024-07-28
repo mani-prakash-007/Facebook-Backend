@@ -20,26 +20,34 @@ const Authorization = catchError(async (req, res, next) => {
   if (!token) {
     throw new NotFoundError("Token not Found in Header");
   }
-  jwt.verify(token, process.env.SECRET_KEY, async (error, decoded) => {
-    if (error) {
-      return next(
-        new UnauthorizedError("JsonWebTokenError: invalid signature")
-      );
+  try {
+    jwt.verify(token, process.env.SECRET_KEY, async (error, decoded) => {
+      if (error) {
+        return next(
+          new UnauthorizedError("JsonWebTokenError: invalid signature")
+        );
+      }
+      userDetails = await User.findById(decoded.id);
+      if (!userDetails) {
+        return next(
+          new UnauthorizedError("JsonWebTokenError: invalid signature")
+        );
+      }
+      req.user = {
+        id: userDetails.id,
+        first_name: userDetails.first_name,
+        last_name: userDetails.last_name,
+        email: userDetails.email,
+      };
+      next();
+    });
+  } catch (error) {
+    if (error instanceof jwt.JsonWebTokenError) {
+      next(new UnauthorizedError("JsonWebTokenError: invalid signature"));
+    } else {
+      next(error);
     }
-    userDetails = await User.findById(decoded.id);
-    if (!userDetails) {
-      return next(
-        new UnauthorizedError("JsonWebTokenError: invalid signature")
-      );
-    }
-    req.user = {
-      id: userDetails.id,
-      first_name: userDetails.first_name,
-      last_name: userDetails.last_name,
-      email: userDetails.email,
-    };
-    next();
-  });
+  }
 });
 
 module.exports = { Authorization };

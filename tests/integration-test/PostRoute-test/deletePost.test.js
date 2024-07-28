@@ -3,7 +3,7 @@ const app = require("../../../app");
 const mongoose = require("mongoose");
 const { generateRandomNumber } = require("../../../randomPortNumGen");
 
-describe("Create Post route", () => {
+describe("Delete Post route", () => {
   //DB Connection Setup
 
   //Truncating all datas in the db
@@ -159,7 +159,7 @@ describe("Create Post route", () => {
         _id: expect.any(String),
         createdAt: expect.any(String),
         updatedAt: expect.any(String),
-        __v: 0,
+        __v: expect.any(Number),
       },
     };
     user1PostId = response.body.Post_Details._id;
@@ -188,7 +188,7 @@ describe("Create Post route", () => {
         _id: expect.any(String),
         createdAt: expect.any(String),
         updatedAt: expect.any(String),
-        __v: 0,
+        __v: expect.any(Number),
       },
     };
     user2PostId = response.body.Post_Details._id;

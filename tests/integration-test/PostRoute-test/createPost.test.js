@@ -140,7 +140,7 @@ describe("Create Post route", () => {
         _id: expect.any(String),
         createdAt: expect.any(String),
         updatedAt: expect.any(String),
-        __v: 0,
+        __v: expect.any(Number),
       },
     };
     //Assertions
