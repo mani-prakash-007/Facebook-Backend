@@ -18,7 +18,6 @@ describe("Get Comments by PostId route", () => {
 
   beforeAll(async () => {
     const PORT = generateRandomNumber();
-    console.log(PORT);
     server = app.listen(PORT, () => {
       console.log(`Server Running on Port : ${PORT}`);
     });

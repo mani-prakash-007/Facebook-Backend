@@ -18,7 +18,6 @@ describe("Toggle post Like route", () => {
 
   beforeAll(async () => {
     const PORT = generateRandomNumber();
-    console.log(PORT);
     server = app.listen(PORT, () => {
       console.log(`Server Running on Port : ${PORT}`);
     });
@@ -60,7 +59,6 @@ describe("Toggle post Like route", () => {
     };
     //User1 ID
     user1Id = response.body.UserData._id;
-    console.log(user1Id);
     //Assertion
     expect(response.status).toBe(200);
     expect(response.body).toMatchObject(expectedResponse);

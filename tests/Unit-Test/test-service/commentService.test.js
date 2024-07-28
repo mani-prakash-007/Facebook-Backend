@@ -218,7 +218,7 @@ describe("update the comment", () => {
     //Assertions
     await expect(
       updateTheComment(commentId, currentUserId, comment)
-    ).rejects.toThrow(new OwnerShipError(" Post not belongs to Current User"));
+    ).rejects.toThrow(new OwnerShipError(" Comment not belongs to Current User"));
   });
   it("should update the comment if currentUserId and comment.user is same", async () => {
     const commentId = "commentId1";
