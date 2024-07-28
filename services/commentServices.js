@@ -58,7 +58,7 @@ const updateTheComment = async (commentId, currentUserId, comment) => {
         UpdatedComment: updatedComment,
       };
     } else {
-      throw new OwnerShipError(" Post not belongs to Current User");
+      throw new OwnerShipError(" Comment not belongs to Current User");
     }
   } else {
     throw new NotFoundError("Comment not Found");

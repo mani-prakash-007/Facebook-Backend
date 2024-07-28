@@ -3,7 +3,7 @@ const app = require("../../../app");
 const mongoose = require("mongoose");
 const { generateRandomNumber } = require("../../../randomPortNumGen");
 
-describe("Toggle post Dislike route", () => {
+describe("Create Comment route", () => {
   //DB Connection Setup
 
   //Truncating all datas in the db
@@ -35,22 +35,22 @@ describe("Toggle post Dislike route", () => {
     console.log("Connection Closed...");
   });
 
-  //Creating a User-1 before login
-  it("should return a response with 200 upon successful registration User 1", async () => {
+  //Creating a User before login
+  it("should return a response with 200 upon successful registration", async () => {
     //Test
     const response = await request(app).post("/api/user/register").send({
-      fname: "User1",
-      lname: "User1",
-      email: "user1@gmail.com",
-      password: "User1@2003",
+      fname: "Mani",
+      lname: "Prakash",
+      email: "mani@gmail.com",
+      password: "Mani@2003",
     });
     //Actual Response
     const expectedResponse = {
       Status: "Register Successful",
       UserData: {
-        first_name: "User1",
-        last_name: "User1",
-        email: "user1@gmail.com",
+        first_name: "Mani",
+        last_name: "Prakash",
+        email: "mani@gmail.com",
         password: expect.any(String),
         _id: expect.any(String),
         createdAt: expect.any(String),
@@ -58,48 +58,18 @@ describe("Toggle post Dislike route", () => {
         __v: expect.any(Number),
       },
     };
-    //User1 ID
+    //UserId
     user1Id = response.body.UserData._id;
-    console.log(user1Id);
     //Assertion
     expect(response.status).toBe(200);
     expect(response.body).toMatchObject(expectedResponse);
   });
-  //Creating a User-2 before login
-  it("should return a response with 200 upon successful registration of User 2", async () => {
-    //Test
-    const response = await request(app).post("/api/user/register").send({
-      fname: "User2",
-      lname: "User2",
-      email: "user2@gmail.com",
-      password: "User2@2003",
-    });
-    //Actual Response
-    const expectedResponse = {
-      Status: "Register Successful",
-      UserData: {
-        first_name: "User2",
-        last_name: "User2",
-        email: "user2@gmail.com",
-        password: expect.any(String),
-        _id: expect.any(String),
-        createdAt: expect.any(String),
-        updatedAt: expect.any(String),
-        __v: expect.any(Number),
-      },
-    };
-    //User2 ID
-    user2Id = response.body.UserData._id;
-    //Assertion
-    expect(response.status).toBe(200);
-    expect(response.body).toMatchObject(expectedResponse);
-  });
-  //Test - Login User1
-  it("should return a response with 200 upon successful login of User - 1", async () => {
+  //Test - Login
+  it("should return a response with 200 upon successful login", async () => {
     //Test
     const response = await request(app).post("/api/user/login").send({
-      email: "user1@gmail.com",
-      password: "User1@2003",
+      email: "mani@gmail.com",
+      password: "Mani@2003",
     });
     //Actual Response
     const jwtRegex = /^[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+$/;
@@ -111,48 +81,25 @@ describe("Toggle post Dislike route", () => {
       },
     };
     //JWT Token
-    user1Token = response.body.Details.token;
+    token = response.body.Details.token;
     //Assertion
     expect(response.status).toBe(200);
     expect(response.body).toMatchObject(expectedResponse);
   });
-  //Test - Login User2
-  it("should return a response with 200 upon successful login of User - 2", async () => {
-    //Test
-    const response = await request(app).post("/api/user/login").send({
-      email: "user2@gmail.com",
-      password: "User2@2003",
-    });
-    //Actual Response
-    const jwtRegex = /^[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+$/;
-    const expectedResponse = {
-      Details: {
-        statusCode: 200,
-        status: "Login Success",
-        token: expect.stringMatching(jwtRegex),
-      },
-    };
-    //JWT Token
-    user2Token = response.body.Details.token;
-    //Assertion
-    expect(response.status).toBe(200);
-    expect(response.body).toMatchObject(expectedResponse);
-  });
-  //Creating Post
-  it("should create a post for User-1 after successful login", async () => {
+  it("should create a post upon successful Authorization of User", async () => {
     //Test
     const response = await request(app)
       .post("/api/post/")
-      .set("Authorization", `Bearer ${user1Token}`)
+      .set("Authorization", `Bearer ${token}`)
       .send({
-        feed: "Post - User1",
+        feed: "New Post",
       });
     //Actual Response
     const expectedResponse = {
       Status: "Post Created",
       Post_Details: {
         user: expect.any(String),
-        feed: "Post - User1",
+        feed: "New Post",
         likes: [],
         dislikes: [],
         comments: [],
@@ -162,36 +109,8 @@ describe("Toggle post Dislike route", () => {
         __v: expect.any(Number),
       },
     };
+    //Post Id
     user1PostId = response.body.Post_Details._id;
-    //Assertions
-    expect(response.status).toBe(200);
-    expect(response.body).toMatchObject(expectedResponse);
-  });
-  //Creating Post
-  it("should create a post for User-2 after successful login", async () => {
-    //Test
-    const response = await request(app)
-      .post("/api/post/")
-      .set("Authorization", `Bearer ${user2Token}`)
-      .send({
-        feed: "Post - User2",
-      });
-    //Actual Response
-    const expectedResponse = {
-      Status: "Post Created",
-      Post_Details: {
-        user: expect.any(String),
-        feed: "Post - User2",
-        likes: [],
-        dislikes: [],
-        comments: [],
-        _id: expect.any(String),
-        createdAt: expect.any(String),
-        updatedAt: expect.any(String),
-        __v: expect.any(Number),
-      },
-    };
-    user2PostId = response.body.Post_Details._id;
     //Assertions
     expect(response.status).toBe(200);
     expect(response.body).toMatchObject(expectedResponse);
@@ -200,7 +119,7 @@ describe("Toggle post Dislike route", () => {
   it("should return notFound Error upon no token is passed in the Header.Authorization", async () => {
     //Test
     const response = await request(app)
-      .post(`/api/post/dislike/${user1PostId}`)
+      .post(`/api/post/comment/${user1PostId}`)
       .set("Authorization", `Bearer `)
       .send();
     //Actual Response
@@ -215,11 +134,11 @@ describe("Toggle post Dislike route", () => {
     expect(response.body).toMatchObject(expectedResponse);
   });
   //Test - JWT token verification fails
-  it("should return JsonWebTokenError upon token verification fails", async () => {
+  it("should return notFound Error upon no token is passed in the Header.Authorization", async () => {
     //Test
     const response = await request(app)
-      .post(`/api/post/dislike/${user1PostId}`)
-      .set("Authorization", `Bearer ${user1Token}siuf`)
+      .post(`/api/post/comment/${user1PostId}`)
+      .set("Authorization", `Bearer ${token}siuf`)
       .send();
     //Actual Response
     const expectedResponse = {
@@ -233,14 +152,44 @@ describe("Toggle post Dislike route", () => {
     expect(response.body).toMatchObject(expectedResponse);
   });
 
+  //Test - No Comment field
+  it("should return required field error upon missing field", async () => {
+    //Test
+    const response = await request(app)
+      .post(`/api/post/comment/${user1PostId}`)
+      .set("Authorization", `Bearer ${token}`)
+      .send();
+    //Actual response
+    const expectedResponse = {
+      error: "Comment is required.",
+    };
+    //Assertions
+    expect(response.status).toBe(400);
+    expect(response.body).toMatchObject(expectedResponse);
+  });
+  //Test - No comment value
+  it("should return field value required error upon no value on the field", async () => {
+    //Test
+    const response = await request(app)
+      .post(`/api/post/comment/${user1PostId}`)
+      .set("Authorization", `Bearer ${token}`)
+      .send({ comment: "" });
+    //Actual response
+    const expectedResponse = {
+      error: '"comment" is not allowed to be empty',
+    };
+    //Assertions
+    expect(response.status).toBe(400);
+    expect(response.body).toMatchObject(expectedResponse);
+  });
   //Test - Req.params.id Validation
   it("should return Validation field error upon entering post Id", async () => {
     //Test
-    const id = "66a53545d5c556";
+    const id = "66a53545d5c556a233239bd";
     const response = await request(app)
-      .post(`/api/post/dislike/${id}`)
-      .set("Authorization", `Bearer ${user1Token}`)
-      .send();
+      .post(`/api/post/comment/${id}`)
+      .set("Authorization", `Bearer ${token}`)
+      .send({ comment: "Hello World" });
     //Actual response
     const expectedResponse = {
       error:
@@ -250,54 +199,47 @@ describe("Toggle post Dislike route", () => {
     expect(response.status).toBe(400);
     expect(response.body).toMatchObject(expectedResponse);
   });
-
   //Test - Post not Exist
   it("should return NotFoundError error upon entering postId is not exist", async () => {
     //Test
     const id = "669a061576c54cbc43de69df";
     const response = await request(app)
-      .post(`/api/post/dislike/${id}`)
-      .set("Authorization", `Bearer ${user1Token}`)
-      .send({ feed: "Updated Post" });
+      .post(`/api/post/comment/${id}`)
+      .set("Authorization", `Bearer ${token}`)
+      .send({ comment: "Hello World" });
     //Actual response
     const expectedResponse = {
       StatusCode: 404,
       ErrorName: "NotFoundError",
-      ErrorMessage: "Post not found",
+      ErrorMessage: "Post not Found",
     };
     //Assertions
     expect(response.status).toBe(404);
     expect(response.body).toMatchObject(expectedResponse);
   });
-  //Test - Return All post
-  it("should return a message with added like upon hitting the toggle like endpoint", async () => {
+  //Test - Create Comment
+  it("should create a comment for the given post Id", async () => {
     //Test
     const response = await request(app)
-      .post(`/api/post/dislike/${user1PostId}`)
-      .set("Authorization", `Bearer ${user1Token}`)
-      .send();
-    //Actual Response
+      .post(`/api/post/comment/${user1PostId}`)
+      .set("Authorization", `Bearer ${token}`)
+      .send({ comment: "Hello World" });
+    //Actual response
     const expectedResponse = {
-      Details: {
+      comentingProcess: {
         statusCode: 200,
-        Status: "Dislike Added to the post",
-      },
-    };
-    //Assertions
-    expect(response.status).toBe(200);
-    expect(response.body).toMatchObject(expectedResponse);
-  });
-  it("should return a message with removed like upon hitting the toggle like endpoint", async () => {
-    //Test
-    const response = await request(app)
-      .post(`/api/post/dislike/${user1PostId}`)
-      .set("Authorization", `Bearer ${user1Token}`)
-      .send();
-    //Actual Response
-    const expectedResponse = {
-      Details: {
-        statusCode: 200,
-        Status: "Dislike Removed from the post",
+        Status: "Comment Added",
+        CommentData: {
+          user: user1Id,
+          post: user1PostId,
+          comment: "Hello World",
+          likes: [],
+          dislikes: [],
+          _id: expect.any(String),
+          createdAt: expect.any(String),
+          updatedAt: expect.any(String),
+          __v: expect.any(Number),
+        },
       },
     };
     //Assertions

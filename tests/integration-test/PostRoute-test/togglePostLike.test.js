@@ -3,7 +3,7 @@ const app = require("../../../app");
 const mongoose = require("mongoose");
 const { generateRandomNumber } = require("../../../randomPortNumGen");
 
-describe("Get Current user Post route", () => {
+describe("Toggle post Like route", () => {
   //DB Connection Setup
 
   //Truncating all datas in the db
@@ -232,8 +232,6 @@ describe("Get Current user Post route", () => {
     expect(response.status).toBe(401);
     expect(response.body).toMatchObject(expectedResponse);
   });
-
-  //////////////////////////////////////////////////////////////////////////////////////////////////
 
   //Test - Req.params.id Validation
   it("should return Validation field error upon entering post Id", async () => {
